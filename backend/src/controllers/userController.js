@@ -1,4 +1,5 @@
 import User from "../models/User.js";
+import mongoose from "mongoose";
 
 // Get all users
 
@@ -22,6 +23,9 @@ export const getAllUsers = async (req, res) => {
 export const getUserById = async (req, res) => {
     try {
         const { id } = req.params;
+        if(!mongoose.Types.ObjectId.isValid(id)) {
+            return res.status(404).json({ message: "User not found" });
+        }
         const user = await User.findById(id).select("-password");
         if(!user) {
             return res.status(404).json({ message: "User not found" });
@@ -76,6 +80,12 @@ export const createUser = async (req,res) =>{
 export const updateUser = async (req,res) => {
     try {
         const { id } = req.params;
+        if(!mongoose.Types.ObjectId.isValid(id)) {
+            return res.status(404).json({
+                success: false,
+                message: "User not found" 
+            });
+        }
 
         const existingUser = await User.findOne({ email : req.body.email, _id : { $ne : id } });
         if(existingUser) {
@@ -115,6 +125,12 @@ export const updateUser = async (req,res) => {
 export const deleteUser = async (req,res) => {
     try{
         const { id } = req.params;
+        if(!mongoose.Types.ObjectId.isValid(id)) {
+            return res.status(404).json({
+                success: false,
+                message: "User not found" 
+            });
+        }
         const user = await User.findByIdAndDelete(id);
         if(!user) {
             return res.status(404).json({

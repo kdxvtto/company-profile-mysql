@@ -9,7 +9,7 @@ const router = express.Router();
 
 router.get("/", getAllTeamProfiles);
 router.post("/", verifyToken, upload.single("image"), validate(createTeamProfileSchema), createTeamProfile);
-router.put("/:id", verifyToken, validate(updateTeamProfileSchema), updateTeamProfile);
+router.put("/:id", verifyToken, upload.single("image"), validate(updateTeamProfileSchema), updateTeamProfile);
 router.delete("/:id", verifyToken, deleteTeamProfile);
 
 export default router;

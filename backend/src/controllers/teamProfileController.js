@@ -1,6 +1,7 @@
 // Wrong before: nama import/instansiasi bentrok (const teamProfile = new teamProfile) dan kapitalisasi model.
 import TeamProfile from "../models/teamProfile.js";
 import { removeFile } from "../utils/file.js";
+import mongoose from "mongoose";
 
 // Get all team profiles
 export const getAllTeamProfiles = async (req, res) => {
@@ -58,7 +59,15 @@ export const createTeamProfile= async (req,res) => {
 export const updateTeamProfile = async (req,res) => {
     const newImage = req.file ? `/uploads/${req.file.filename}` : null;
     try {
-        const teamProfile = await TeamProfile.findById(req.params.id);
+        const { id } = req.params;
+        if(!mongoose.Types.ObjectId.isValid(id)) {
+            if(newImage) await removeFile(newImage);
+            return res.status(404).json({
+                success: false,
+                message: "Team profile not found" 
+            });
+        }
+        const teamProfile = await TeamProfile.findById(id);
         if(!teamProfile) {
             if(newImage) await removeFile(newImage);
             return res.status(404).json({
@@ -97,6 +106,12 @@ export const updateTeamProfile = async (req,res) => {
 export const deleteTeamProfile = async (req,res) => {
     try{
         const { id } = req.params;
+        if(!mongoose.Types.ObjectId.isValid(id)) {
+            return res.status(404).json({
+                success: false,
+                message: "Team profile not found" 
+            });
+        }
         const teamProfile = await TeamProfile.findByIdAndDelete(id);
         if(!teamProfile) {
             return res.status(404).json({

@@ -85,7 +85,7 @@ const creditUserSchema = new mongoose.Schema({
         statusInFamily : {
             type: String,
             enum : ["Suami", "Istri", "Anggota Keluarga"],
-            default : "Anak"
+            default : "Anggota Keluarga"
         },
     },
     family : {

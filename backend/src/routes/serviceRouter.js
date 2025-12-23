@@ -9,7 +9,7 @@ const router = express.Router();
 
 router.get("/", getAllServices);
 router.post("/", verifyToken, upload.single("image"), validate(createServicesSchema), createService);
-router.put("/:id", verifyToken, validate(updateServicesSchema), updateService);
+router.put("/:id", verifyToken, upload.single("image"), validate(updateServicesSchema), updateService);
 router.delete("/:id", verifyToken, deleteService);
 
 export default router;

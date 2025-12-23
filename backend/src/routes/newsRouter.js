@@ -9,8 +9,8 @@ const router = express.Router();
 
 router.get("/", getAllNews);
 router.get("/:id", getNewsById);
-router.post("/", verifyToken,upload.single("image"), validate(createNewsSchema), createNews);
-router.put("/:id", verifyToken, validate(updateNewsSchema), updateNews);
+router.post("/", verifyToken, upload.single("image"), validate(createNewsSchema), createNews);
+router.put("/:id", verifyToken, upload.single("image"), validate(updateNewsSchema), updateNews);
 router.delete("/:id", verifyToken, deleteNews);
 
 export default router;

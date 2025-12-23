@@ -1,5 +1,5 @@
 import CreditUser from "../models/CreditUser.js";
-import { createCreditUserSchema } from "../validations/creditUserValidation.js";
+import mongoose from "mongoose";
 
 // Get all users
 export const getAllCreditUsers = async (req, res) => {
@@ -21,6 +21,9 @@ export const getAllCreditUsers = async (req, res) => {
 export const getCreditUserById = async (req, res) => {
     try {
         const { id } = req.params;
+        if(!mongoose.Types.ObjectId.isValid(id)) {
+            return res.status(404).json({ message: "Credit user not found" });
+        }
         const creditUser = await CreditUser.findById(id);
         if(!creditUser) {
             return res.status(404).json({ message: "Credit user not found" });
@@ -58,6 +61,12 @@ export const createCreditUser = async (req,res) => {
 export const updateCreditUser = async (req,res) =>{
     try {
         const { id } = req.params;
+        if(!mongoose.Types.ObjectId.isValid(id)) {
+            return res.status(404).json({
+                success: false,
+                message: "Credit user not found" 
+            });
+        }
         const creditUser = await CreditUser.findByIdAndUpdate(
         id,
         req.body, {
@@ -86,6 +95,12 @@ export const updateCreditUser = async (req,res) =>{
 export const deleteCreditUser = async (req,res) => {
     try{
         const { id } = req.params;
+        if(!mongoose.Types.ObjectId.isValid(id)) {
+            return res.status(404).json({
+                success: false,
+                message: "Credit user not found" 
+            });
+        }
         const creditUser = await CreditUser.findByIdAndDelete(id);
         if(!creditUser) {
             return res.status(404).json({

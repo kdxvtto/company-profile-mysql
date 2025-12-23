@@ -32,5 +32,6 @@ export const validate = (schema) => async (req,res,next) =>{
         error : formattedError,
       })
     }
+    req.body = result.data
     next();
 }

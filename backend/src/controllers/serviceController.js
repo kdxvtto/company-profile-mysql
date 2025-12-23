@@ -1,5 +1,6 @@
 import Services from "../models/Services.js";
 import { removeFile } from "../utils/file.js";
+import mongoose from "mongoose";
 
 // Get all services
 export const getAllServices = async (req, res) => {
@@ -51,7 +52,15 @@ export const createService = async (req,res) => {
 export const updateService = async (req,res) => {
     const newImage = req.file ? `/uploads/${req.file.filename}` : null;
     try {
-        const service = await Services.findById(req.params.id);
+        const { id } = req.params;
+        if(!mongoose.Types.ObjectId.isValid(id)) {
+            if(newImage) await removeFile(newImage);
+            return res.status(404).json({
+                success: false,
+                message: "Service not found" 
+            });
+        }
+        const service = await Services.findById(id);
         if(!service) {
             if(newImage) await removeFile(newImage);
             return res.status(404).json({
@@ -90,6 +99,12 @@ export const updateService = async (req,res) => {
 export const deleteService = async (req,res) => {
     try{
         const { id } = req.params;
+        if(!mongoose.Types.ObjectId.isValid(id)) {
+            return res.status(404).json({
+                success: false,
+                message: "Service not found" 
+            });
+        }
         const service = await Services.findByIdAndDelete(id);
         if(!service) {
             return res.status(404).json({

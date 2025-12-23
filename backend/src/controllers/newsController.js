@@ -1,5 +1,6 @@
 import News from "../models/News.js";
 import { removeFile } from "../utils/file.js";
+import mongoose from "mongoose";
 
 // Get all news
 export const getAllNews = async (req, res) => {
@@ -21,6 +22,9 @@ export const getAllNews = async (req, res) => {
 export const getNewsById = async (req, res) => {
     try {
         const { id } = req.params;
+        if(!mongoose.Types.ObjectId.isValid(id)) {
+            return res.status(404).json({ message: "News not found" });
+        }
         const news = await News.findById(id);
         if(!news) {
             return res.status(404).json({ message: "News not found" });
@@ -69,7 +73,15 @@ export const createNews = async (req,res) => {
 export const updateNews = async (req,res) => {
     const newImage = req.file ? `/uploads/${req.file.filename}` : null;
     try {
-        const news = await News.findById(req.params.id);
+        const { id } = req.params;
+        if(!mongoose.Types.ObjectId.isValid(id)) {
+            if(newImage) await removeFile(newImage);
+            return res.status(404).json({
+                success: false,
+                message: "News not found" 
+            });
+        }
+        const news = await News.findById(id);
         if(!news) {
             if(newImage) await removeFile(newImage);
             return res.status(404).json({
@@ -108,6 +120,12 @@ export const updateNews = async (req,res) => {
 export const deleteNews = async (req,res) => {
     try{
         const { id } = req.params;
+        if(!mongoose.Types.ObjectId.isValid(id)) {
+            return res.status(404).json({
+                success: false,
+                message: "News not found" 
+            });
+        }
         const news = await News.findByIdAndDelete(id);
         if(!news) {
             return res.status(404).json({
