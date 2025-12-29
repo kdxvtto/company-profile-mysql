@@ -49,15 +49,15 @@ export const authAPI = {
 // Team Profile API
 // ========================
 export const teamAPI = {
-    getAll: () => api.get('/team'),
-    getById: (id) => api.get(`/team/${id}`),
-    create: (data) => api.post('/team', data, {
+    getAll: () => api.get('/team-profiles'),
+    getById: (id) => api.get(`/team-profiles/${id}`),
+    create: (data) => api.post('/team-profiles', data, {
         headers: { 'Content-Type': 'multipart/form-data' },
     }),
-    update: (id, data) => api.put(`/team/${id}`, data, {
+    update: (id, data) => api.put(`/team-profiles/${id}`, data, {
         headers: { 'Content-Type': 'multipart/form-data' },
     }),
-    delete: (id) => api.delete(`/team/${id}`),
+    delete: (id) => api.delete(`/team-profiles/${id}`),
 };
 
 // ========================

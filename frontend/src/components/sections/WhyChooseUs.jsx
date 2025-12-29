@@ -14,8 +14,8 @@ const WhyChooseUs = () => {
             icon: Percent,
             title: "BUNGA BERSAING",
             description: "Simpanan di BANK WONOGIRI dengan bunga bersaing sampai dengan suku bunga LPS.",
-            color: "text-blue-600",
-            bgColor: "bg-blue-100",
+            color: "text-red-600",
+            bgColor: "bg-red-100",
         },
         {
             icon: Store,
@@ -57,7 +57,7 @@ const WhyChooseUs = () => {
             icon: Lightbulb,
             title: "CREATIVE SERVICE",
             description: "BANK GIRI SUKA DANA terus melakukan inovasi digitalisasi agar tetap dapat bersaing di dunia perbankan dan memberikan pelayanan terbaik, cepat dan efisien bagi nasabah.",
-            gradient: "from-cyan-400 to-blue-500",
+            gradient: "from-rose-400 to-red-500",
         },
     ];
 
@@ -66,13 +66,13 @@ const WhyChooseUs = () => {
             <div className="max-w-7xl mx-auto px-6 lg:px-8">
                 {/* Section Header */}
                 <div className="text-center mb-16">
-                    <span className="text-sm font-semibold text-blue-600 tracking-widest uppercase mb-2 block">
+                    <span className="text-sm font-semibold text-red-600 tracking-widest uppercase mb-2 block">
                         Mengapa Memilih Kami?
                     </span>
                     <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-                        Alasan anda memilih <span className="text-blue-600">BANK WONOGIRI</span>
+                        Alasan anda memilih <span className="text-red-600">BANK WONOGIRI</span>
                     </h2>
-                    <div className="w-24 h-1 bg-gradient-to-r from-blue-600 to-indigo-600 mx-auto rounded-full"></div>
+                    <div className="w-24 h-1 bg-gradient-to-r from-red-600 to-rose-600 mx-auto rounded-full"></div>
                 </div>
 
                 {/* Two Column Layout */}

@@ -14,7 +14,7 @@ if (!fs.existsSync(uploadsDir)) {
     fs.mkdirSync(uploadsDir, { recursive: true });
 }
 
-const allowedMimeTypes = new Set(["image/jpeg", "image/png"]);
+const allowedMimeTypes = new Set(["image/jpeg", "image/png", "image/webp", "image/gif"]);
 
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {

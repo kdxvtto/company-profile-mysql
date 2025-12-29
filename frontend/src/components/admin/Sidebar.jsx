@@ -5,13 +5,11 @@ import {
     Briefcase, 
     Newspaper, 
     UserCog,
-    ChevronLeft,
     LogOut
 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 import { useAuth } from '@/context/AuthContext';
 
-const Sidebar = ({ isOpen, setIsOpen }) => {
+const Sidebar = () => {
     const navigate = useNavigate();
     const { logout } = useAuth();
 
@@ -49,13 +47,9 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
     };
 
     return (
-        <aside
-            className={`fixed top-0 left-0 z-40 h-screen bg-gradient-to-b from-red-800 via-red-700 to-red-900 text-white transition-all duration-300 ${
-                isOpen ? 'w-64' : 'w-20'
-            } ${isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}`}
-        >
+        <aside className="fixed top-0 left-0 z-40 h-screen w-64 bg-gradient-to-b from-rose-50 via-rose-100 to-slate-100 text-slate-800">
             {/* Logo */}
-            <div className="flex items-center justify-between h-16 px-4 border-b border-white/10">
+            <div className="flex items-center h-16 px-4 border-b border-rose-200">
                 <div className="flex items-center gap-3">
                     <img
                         src="https://bankwonogiri.co.id/public/uploads/logo.png"
@@ -63,14 +57,6 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
                         className="h-10 w-auto"
                     />
                 </div>
-                <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => setIsOpen(!isOpen)}
-                    className="hidden lg:flex text-white hover:bg-white/10"
-                >
-                    <ChevronLeft className={`w-5 h-5 transition-transform ${!isOpen ? 'rotate-180' : ''}`} />
-                </Button>
             </div>
 
             {/* Navigation */}
@@ -85,30 +71,26 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
                             className={({ isActive }) =>
                                 `flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 ${
                                     isActive
-                                        ? 'bg-white/20 text-white shadow-lg'
-                                        : 'text-white/70 hover:bg-white/10 hover:text-white'
+                                        ? 'bg-rose-500 text-white shadow-lg'
+                                        : 'text-slate-600 hover:bg-rose-200 hover:text-slate-800'
                                 }`
                             }
                         >
                             <Icon className="w-5 h-5 flex-shrink-0" />
-                            {isOpen && (
-                                <span className="font-medium">{item.title}</span>
-                            )}
+                            <span className="font-medium">{item.title}</span>
                         </NavLink>
                     );
                 })}
             </nav>
 
             {/* Logout Button */}
-            <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-white/10">
+            <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-rose-200">
                 <button
                     onClick={handleLogout}
-                    className="flex items-center gap-3 w-full px-4 py-3 rounded-lg text-white/70 hover:bg-white/10 hover:text-white transition-all duration-200"
+                    className="flex items-center gap-3 w-full px-4 py-3 rounded-lg text-slate-600 hover:bg-rose-200 hover:text-red-600 transition-all duration-200"
                 >
                     <LogOut className="w-5 h-5 flex-shrink-0" />
-                    {isOpen && (
-                        <span className="font-medium">Logout</span>
-                    )}
+                    <span className="font-medium">Logout</span>
                 </button>
             </div>
         </aside>
@@ -116,4 +98,3 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
 };
 
 export default Sidebar;
-

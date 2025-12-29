@@ -16,9 +16,15 @@ const servicesSchema = new mongoose.Schema({
         type: String,
         required: true,
     },
+    category: {
+        type: String,
+        enum: ["Kredit", "Tabungan", "Deposito"],
+        default: "Kredit",
+    },
 },{
     timestamps: true
 }
 );
 
 export default mongoose.model("Services", servicesSchema);
+

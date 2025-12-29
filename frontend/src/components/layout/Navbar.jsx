@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import { Search, Menu, X, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -19,26 +20,45 @@ const Navbar = () => {
         {
             label: "Halaman",
             dropdown: [
-                { label: "Tentang Kami", href: "/tentang" },
-                { label: "Visi & Misi", href: "/visi-misi" },
-                { label: "Sejarah", href: "/sejarah" },
+                { label: "Kegiatan", href: "/kegiatan" },
+                { label: "Galeri", href: "/galeri" },
+                { label: "FAQ", href: "/faq" },
+                { label: "Team", href: "/team" },
             ],
         },
         {
             label: "Layanan",
+            megamenu: true,
             dropdown: [
-                { label: "Kredit Umum", href: "/layanan/kredit-umum" },
-                { label: "Kredit Sumeh", href: "/layanan/kredit-sumeh" },
-                { label: "Kredit Elektronik", href: "/layanan/kredit-elektronik" },
-                { label: "Kredit Wonogiren", href: "/layanan/kredit-wonogiren" },
+                { 
+                    category: "Existing Services",
+                    items: [
+                        { label: "Produk Layanan", href: "/layanan/produk" },
+                        { label: "Pengajuan Kredit", href: "https://cdg.girisukadana.co.id/", external: true },
+                        { label: "Simulasi Kredit", href: "https://cdg.girisukadana.co.id/web/simulations", external: true },
+                        { label: "Whistleblowing System", href: "https://wbs.girisukadana.co.id/", external: true },
+                        { label: "PPOB", href: "/layanan/ppob" },
+                        { label: "EDC", href: "/layanan/edc" },
+                        { label: "Joss WA", href: "/layanan/joss-wa" },
+                    ]
+                },
+                { 
+                    category: "Coming Soon",
+                    items: [
+                        { label: "SnapBank", href: "#", disabled: true },
+                        { label: "Open API PPOB", href: "#", disabled: true },
+                        { label: "GoDepo", href: "#", disabled: true },
+                        { label: "GoTicketing", href: "#", disabled: true },
+                    ]
+                },
             ],
         },
         {
             label: "Informasi",
             dropdown: [
-                { label: "Syarat & Ketentuan", href: "/informasi/syarat" },
-                { label: "FAQ", href: "/informasi/faq" },
-                { label: "Prosedur", href: "/informasi/prosedur" },
+                { label: "Artikel Terkini", href: "/informasi/artikel" },
+                { label: "Suku Bunga LPS", href: "/informasi/suku-bunga" },
+                { label: "Pengaduan Nasabah", href: "/informasi/pengaduan" },
             ],
         },
         { label: "Publikasi", href: "/publikasi" },
@@ -52,13 +72,13 @@ const Navbar = () => {
                     
                     {/* Logo - Kiri */}
                     <div className="flex-shrink-0">
-                        <a href="/" className="flex items-center">
+                        <Link to="/" className="flex items-center">
                             <img 
                                 src="https://bankwonogiri.co.id/public/uploads/logo.png" 
                                 alt="Bank Wonogiri"
                                 className="h-10 w-auto"
                             />
-                        </a>
+                        </Link>
                     </div>
 
                     {/* Menu - Tengah (Desktop) */}
@@ -67,32 +87,72 @@ const Navbar = () => {
                             item.dropdown ? (
                                 <DropdownMenu key={index}>
                                     <DropdownMenuTrigger asChild>
-                                        <button className="flex items-center gap-1 px-3 py-2 text-sm font-medium text-gray-600 hover:text-blue-600 hover:bg-gray-50 rounded-md transition-colors">
+                                        <button className="flex items-center gap-1 px-3 py-2 text-sm font-medium text-gray-600 hover:text-red-600 hover:bg-gray-50 rounded-md transition-colors">
                                             {item.label}
                                             <ChevronDown className="w-4 h-4" />
                                         </button>
                                     </DropdownMenuTrigger>
-                                    <DropdownMenuContent align="center" className="w-48">
-                                        {item.dropdown.map((subItem, subIndex) => (
-                                            <DropdownMenuItem key={subIndex} asChild>
-                                                <a 
-                                                    href={subItem.href}
-                                                    className="w-full cursor-pointer"
-                                                >
-                                                    {subItem.label}
-                                                </a>
-                                            </DropdownMenuItem>
-                                        ))}
+                                    <DropdownMenuContent 
+                                        align="center" 
+                                        className={item.megamenu ? "w-80 p-4" : "w-48"}
+                                    >
+                                        {item.megamenu ? (
+                                            <div className="grid grid-cols-2 gap-4">
+                                                {item.dropdown.map((section, sectionIndex) => (
+                                                    <div key={sectionIndex}>
+                                                        <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">
+                                                            {section.category}
+                                                        </p>
+                                                        <div className="space-y-1">
+                                                            {section.items.map((subItem, subIndex) => (
+                                                                <DropdownMenuItem key={subIndex} asChild disabled={subItem.disabled}>
+                                                                    {subItem.external ? (
+                                                                        <a 
+                                                                            href={subItem.href}
+                                                                            target="_blank"
+                                                                            rel="noopener noreferrer"
+                                                                            className="w-full cursor-pointer text-sm flex items-center"
+                                                                        >
+                                                                            {subItem.label}
+                                                                            <span className="ml-1 text-xs">↗</span>
+                                                                        </a>
+                                                                    ) : (
+                                                                        <Link 
+                                                                            to={subItem.href}
+                                                                            className={`w-full cursor-pointer text-sm ${subItem.disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                                                        >
+                                                                            {subItem.label}
+                                                                            {subItem.disabled && <span className="ml-1 text-xs text-rose-500">🔜</span>}
+                                                                        </Link>
+                                                                    )}
+                                                                </DropdownMenuItem>
+                                                            ))}
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        ) : (
+                                            item.dropdown.map((subItem, subIndex) => (
+                                                <DropdownMenuItem key={subIndex} asChild>
+                                                    <Link 
+                                                        to={subItem.href}
+                                                        className="w-full cursor-pointer"
+                                                    >
+                                                        {subItem.label}
+                                                    </Link>
+                                                </DropdownMenuItem>
+                                            ))
+                                        )}
                                     </DropdownMenuContent>
                                 </DropdownMenu>
                             ) : (
-                                <a
+                                <Link
                                     key={index}
-                                    href={item.href}
-                                    className="px-3 py-2 text-sm font-medium text-gray-600 hover:text-blue-600 hover:bg-gray-50 rounded-md transition-colors"
+                                    to={item.href}
+                                    className="px-3 py-2 text-sm font-medium text-gray-600 hover:text-red-600 hover:bg-gray-50 rounded-md transition-colors"
                                 >
                                     {item.label}
-                                </a>
+                                </Link>
                             )
                         ))}
                     </div>
@@ -106,7 +166,7 @@ const Navbar = () => {
                                     <input
                                         type="text"
                                         placeholder="Cari..."
-                                        className="w-48 px-3 py-1.5 text-sm border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                        className="w-48 px-3 py-1.5 text-sm border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
                                         autoFocus
                                     />
                                     <Button
@@ -159,24 +219,24 @@ const Navbar = () => {
                                     </div>
                                     <div className="pl-4 space-y-1">
                                         {item.dropdown.map((subItem, subIndex) => (
-                                            <a
+                                            <Link
                                                 key={subIndex}
-                                                href={subItem.href}
-                                                className="block px-3 py-2 text-sm text-gray-600 hover:text-blue-600 hover:bg-gray-50 rounded-md"
+                                                to={subItem.href}
+                                                className="block px-3 py-2 text-sm text-gray-600 hover:text-red-600 hover:bg-gray-50 rounded-md"
                                             >
                                                 {subItem.label}
-                                            </a>
+                                            </Link>
                                         ))}
                                     </div>
                                 </div>
                             ) : (
-                                <a
+                                <Link
                                     key={index}
-                                    href={item.href}
-                                    className="block px-3 py-2 text-sm font-medium text-gray-600 hover:text-blue-600 hover:bg-gray-50 rounded-md"
+                                    to={item.href}
+                                    className="block px-3 py-2 text-sm font-medium text-gray-600 hover:text-red-600 hover:bg-gray-50 rounded-md"
                                 >
                                     {item.label}
-                                </a>
+                                </Link>
                             )
                         ))}
                     </div>

@@ -1,7 +1,6 @@
-import { useState } from 'react';
 import { Outlet, useNavigate } from 'react-router-dom';
 import Sidebar from './Sidebar';
-import { Menu, Bell, Search, User } from 'lucide-react';
+import { Bell, Search, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useAuth } from '@/context/AuthContext';
@@ -13,7 +12,6 @@ import {
 } from '@/components/ui/dropdown-menu';
 
 const AdminLayout = () => {
-    const [sidebarOpen, setSidebarOpen] = useState(true);
     const { user, logout } = useAuth();
     const navigate = useNavigate();
 
@@ -25,26 +23,17 @@ const AdminLayout = () => {
     return (
         <div className="min-h-screen bg-gray-100">
             {/* Sidebar */}
-            <Sidebar isOpen={sidebarOpen} setIsOpen={setSidebarOpen} />
+            <Sidebar />
 
             {/* Main Content */}
-            <div className={`transition-all duration-300 ${sidebarOpen ? 'lg:ml-64' : 'lg:ml-20'}`}>
+            <div className="ml-64">
                 {/* Header */}
                 <header className="sticky top-0 z-40 bg-white border-b border-gray-200 shadow-sm">
                     <div className="flex items-center justify-between h-16 px-4 lg:px-6">
                         {/* Left side */}
                         <div className="flex items-center gap-4">
-                            <Button
-                                variant="ghost"
-                                size="icon"
-                                onClick={() => setSidebarOpen(!sidebarOpen)}
-                                className="lg:hidden"
-                            >
-                                <Menu className="w-5 h-5" />
-                            </Button>
-                            
                             {/* Search */}
-                            <div className="hidden md:flex items-center">
+                            <div className="flex items-center">
                                 <div className="relative">
                                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                                     <Input
@@ -68,7 +57,7 @@ const AdminLayout = () => {
                             <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
                                     <Button variant="ghost" className="flex items-center gap-2">
-                                        <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center">
+                                        <div className="w-8 h-8 bg-rose-600 rounded-full flex items-center justify-center">
                                             <User className="w-4 h-4 text-white" />
                                         </div>
                                         <span className="hidden md:block text-sm font-medium">{user?.name || 'Admin'}</span>
@@ -95,14 +84,6 @@ const AdminLayout = () => {
                     <Outlet />
                 </main>
             </div>
-
-            {/* Mobile Sidebar Overlay */}
-            {sidebarOpen && (
-                <div
-                    className="fixed inset-0 bg-black/50 z-30 lg:hidden"
-                    onClick={() => setSidebarOpen(false)}
-                />
-            )}
         </div>
     );
 };

@@ -6,7 +6,7 @@ const Commitment = () => {
             value: "57",
             label: "Tenaga Profesional",
             icon: Users,
-            color: "from-blue-500 to-indigo-600",
+            color: "from-red-500 to-rose-600",
         },
         {
             value: "18.651",
@@ -29,7 +29,7 @@ const Commitment = () => {
     ];
 
     return (
-        <section className="py-20 bg-gradient-to-br from-blue-900 via-blue-800 to-indigo-900 relative overflow-hidden">
+        <section className="py-20 bg-gradient-to-br from-red-900 via-red-800 to-rose-900 relative overflow-hidden">
             {/* Background decorations */}
             <div className="absolute inset-0 opacity-10">
                 <div className="absolute top-20 left-10 w-72 h-72 bg-white rounded-full blur-3xl"></div>
@@ -41,13 +41,13 @@ const Commitment = () => {
                     {/* Left - Content */}
                     <div className="text-white space-y-6">
                         <div className="space-y-4">
-                            <span className="text-sm font-semibold text-blue-300 tracking-widest uppercase">
+                            <span className="text-sm font-semibold text-red-300 tracking-widest uppercase">
                                 Statistik Kami
                             </span>
                             <h2 className="text-3xl md:text-4xl font-bold leading-tight">
                                 Komitmen Kami dalam Pelayanan Terbaik
                             </h2>
-                            <p className="text-xl text-blue-200">
+                            <p className="text-xl text-red-200">
                                 Kami hadir untuk mendukung setiap langkah perkembangan bisnis Anda.
                             </p>
                         </div>
@@ -80,7 +80,7 @@ const Commitment = () => {
                                         <p className="text-3xl md:text-4xl font-bold text-white mb-1">
                                             {stat.value}
                                         </p>
-                                        <p className="text-blue-200 text-sm">
+                                        <p className="text-red-200 text-sm">
                                             {stat.label}
                                         </p>
                                     </div>

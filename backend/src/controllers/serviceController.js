@@ -18,13 +18,40 @@ export const getAllServices = async (req, res) => {
     }
 }
 
+// Get service by ID
+export const getServiceById = async (req, res) => {
+    try {
+        const { id } = req.params;
+        if(!mongoose.Types.ObjectId.isValid(id)) {
+            return res.status(404).json({ 
+                success: false,
+                message: "Service not found" 
+            });
+        }
+        const service = await Services.findById(id);
+        if(!service) {
+            return res.status(404).json({ 
+                success: false,
+                message: "Service not found" 
+            });
+        }
+        res.status(200).json({
+            success: true,
+            data: service
+        });
+    } catch (error) {
+        res.status(500).json({ 
+            success: false,
+            message: error.message 
+        });
+    }
+}
+
 // Create new service
-// Wrong before: model Services tidak punya field content, sementara controller mengharuskan content.
-// Before: const { title, content, image } = req.body; tanpa field content di schema -> content tidak tersimpan.
 export const createService = async (req,res) => {
     const image = req.file ? `/uploads/${req.file.filename}` : null;
     try{
-        const { title, content} = req.body;
+        const { title, content, category } = req.body;
         if(!title || !content || !image) {
             // Jangan biarkan file tersisa jika payload tidak lengkap
             if(image) await removeFile(image);
@@ -33,7 +60,7 @@ export const createService = async (req,res) => {
                 message: "All fields are required" 
             });
         }
-        const service = new Services({ title, content, image });
+        const service = new Services({ title, content, image, category });
         const newService = await service.save();
         res.status(201).json({
             success: true,

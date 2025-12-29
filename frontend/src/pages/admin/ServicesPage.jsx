@@ -13,6 +13,18 @@ import {
 } from '@/components/ui/dialog';
 import { servicesAPI } from '@/lib/api';
 
+// Base URL untuk gambar dari backend
+const API_BASE_URL = 'http://localhost:3000';
+
+// Helper function untuk mendapatkan URL gambar yang benar
+const getImageUrl = (imagePath) => {
+    if (!imagePath) return null;
+    // Jika sudah URL lengkap, kembalikan langsung
+    if (imagePath.startsWith('http')) return imagePath;
+    // Jika path relatif, tambahkan base URL
+    return `${API_BASE_URL}${imagePath}`;
+};
+
 const ServicesPage = () => {
     const [services, setServices] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -22,6 +34,7 @@ const ServicesPage = () => {
     const [formData, setFormData] = useState({
         title: '',
         content: '',
+        category: 'Kredit',
         image: null,
     });
     const [submitting, setSubmitting] = useState(false);
@@ -59,6 +72,7 @@ const ServicesPage = () => {
             const data = new FormData();
             data.append('title', formData.title);
             data.append('content', formData.content);
+            data.append('category', formData.category);
             if (formData.image) {
                 data.append('image', formData.image);
             }
@@ -99,6 +113,7 @@ const ServicesPage = () => {
             setFormData({
                 title: service.title,
                 content: service.content,
+                category: service.category || 'Kredit',
                 image: null,
             });
         } else {
@@ -106,6 +121,7 @@ const ServicesPage = () => {
             setFormData({
                 title: '',
                 content: '',
+                category: 'Kredit',
                 image: null,
             });
         }
@@ -169,11 +185,11 @@ const ServicesPage = () => {
                         <Card key={service._id} className="overflow-hidden hover:shadow-lg transition-shadow">
                             <div className="h-40 bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center">
                                 {service.image ? (
-                                    <img
-                                        src={service.image}
-                                        alt={service.title}
-                                        className="w-full h-full object-cover"
-                                    />
+                                            <img
+                                                src={getImageUrl(service.image)}
+                                                alt={service.title}
+                                                className="w-full h-full object-cover"
+                                            />
                                 ) : (
                                     <span className="text-4xl">🏦</span>
                                 )}
@@ -238,6 +254,19 @@ const ServicesPage = () => {
                                     className="w-full min-h-[120px] px-3 py-2 border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                                     required
                                 />
+                            </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="category">Kategori</Label>
+                                <select
+                                    id="category"
+                                    value={formData.category}
+                                    onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                                    className="w-full px-3 py-2 border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                >
+                                    <option value="Kredit">Kredit</option>
+                                    <option value="Tabungan">Tabungan</option>
+                                    <option value="Deposito">Deposito</option>
+                                </select>
                             </div>
                             <div className="space-y-2">
                                 <Label htmlFor="image">Gambar</Label>

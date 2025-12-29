@@ -1,49 +1,62 @@
 import { useState, useEffect, useCallback } from "react";
-import { ArrowRight, ChevronLeft, ChevronRight } from "lucide-react";
+import { Link } from "react-router-dom";
+import { ArrowRight, ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
     Carousel,
     CarouselContent,
     CarouselItem,
 } from "@/components/ui/carousel";
+import { servicesAPI } from "@/lib/api";
+
+// Base URL untuk gambar dari backend
+const API_BASE_URL = 'http://localhost:3000';
+
+// Helper function untuk mendapatkan URL gambar yang benar
+const getImageUrl = (imagePath) => {
+    if (!imagePath) return null;
+    if (imagePath.startsWith('http')) return imagePath;
+    return `${API_BASE_URL}${imagePath}`;
+};
+
+// Gradient colors untuk slides
+const gradients = [
+    "from-red-600 via-red-700 to-rose-800",
+    "from-emerald-600 via-teal-600 to-cyan-700",
+    "from-violet-600 via-purple-600 to-fuchsia-700",
+    "from-blue-600 via-blue-700 to-indigo-800",
+    "from-orange-500 via-orange-600 to-red-600",
+];
 
 const Hero = () => {
     const [api, setApi] = useState(null);
     const [current, setCurrent] = useState(0);
+    const [services, setServices] = useState([]);
+    const [loading, setLoading] = useState(true);
 
-    // Slide data
-    const slides = [
-        {
-            id: 1,
-            title: "Solusi Kredit Terpercaya",
-            subtitle: "untuk Masa Depan Anda",
-            description: "Proses cepat, bunga ringan, dan pelayanan yang mengutamakan kenyamanan Anda.",
-            ctaText: "Ajukan Sekarang",
-            ctaLink: "/ajukan",
-            bgGradient: "from-blue-600 via-blue-700 to-indigo-800",
-            image: "🏠",
-        },
-        {
-            id: 2,
-            title: "Kredit Multiguna",
-            subtitle: "Fleksibel & Mudah",
-            description: "Pinjaman untuk berbagai kebutuhan dengan tenor hingga 36 bulan.",
-            ctaText: "Pelajari Lebih Lanjut",
-            ctaLink: "/layanan/kredit-umum",
-            bgGradient: "from-emerald-600 via-teal-600 to-cyan-700",
-            image: "💰",
-        },
-        {
-            id: 3,
-            title: "Proses Cepat 24 Jam",
-            subtitle: "Tanpa Ribet",
-            description: "Pengajuan online, approval cepat, dana langsung cair ke rekening Anda.",
-            ctaText: "Mulai Pengajuan",
-            ctaLink: "/ajukan",
-            bgGradient: "from-violet-600 via-purple-600 to-fuchsia-700",
-            image: "⚡",
-        },
-    ];
+    // Fetch services dari database
+    useEffect(() => {
+        const fetchServices = async () => {
+            try {
+                setLoading(true);
+                const response = await servicesAPI.getAll();
+                const data = response.data.data || [];
+                // Ambil maksimal 5 services untuk carousel
+                setServices(data.slice(0, 5));
+            } catch (error) {
+                console.error('Error fetching services:', error);
+                // Fallback data jika API error
+                setServices([
+                    { _id: '1', title: 'Kredit Umum', content: 'Pinjaman untuk berbagai kebutuhan dengan tenor fleksibel.', category: 'Kredit' },
+                    { _id: '2', title: 'Tabungan', content: 'Simpanan aman dengan bunga kompetitif.', category: 'Tabungan' },
+                ]);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchServices();
+    }, []);
 
     // Auto-play carousel
     useEffect(() => {
@@ -79,6 +92,26 @@ const Hero = () => {
         api?.scrollTo(index);
     }, [api]);
 
+    // Get category icon
+    const getCategoryIcon = (category) => {
+        switch(category) {
+            case 'Kredit': return '💰';
+            case 'Tabungan': return '🏦';
+            case 'Deposito': return '📈';
+            default: return '💳';
+        }
+    };
+
+    if (loading) {
+        return (
+            <section className="relative pt-16">
+                <div className="min-h-[500px] md:min-h-[600px] bg-gradient-to-br from-red-600 via-red-700 to-rose-800 flex items-center justify-center">
+                    <Loader2 className="w-12 h-12 animate-spin text-white" />
+                </div>
+            </section>
+        );
+    }
+
     return (
         <section className="relative pt-16">
             <Carousel
@@ -90,10 +123,10 @@ const Hero = () => {
                 className="w-full"
             >
                 <CarouselContent>
-                    {slides.map((slide, index) => (
-                        <CarouselItem key={slide.id}>
+                    {services.map((service, index) => (
+                        <CarouselItem key={service._id}>
                             <div
-                                className={`relative min-h-[500px] md:min-h-[600px] bg-gradient-to-br ${slide.bgGradient} flex items-center overflow-hidden`}
+                                className={`relative min-h-[500px] md:min-h-[600px] bg-gradient-to-br ${gradients[index % gradients.length]} flex items-center overflow-hidden`}
                             >
                                 {/* Background Pattern */}
                                 <div className="absolute inset-0 opacity-10">
@@ -107,59 +140,68 @@ const Hero = () => {
                                         {/* Text Content */}
                                         <div className="text-white space-y-6">
                                             <div 
+                                                className="inline-block px-4 py-2 bg-white/20 rounded-full text-sm font-medium"
+                                            >
+                                                {service.category || 'Layanan'}
+                                            </div>
+                                            <div 
                                                 className="space-y-2 animate-fade-in"
                                                 style={{ animationDelay: "0.1s" }}
                                             >
                                                 <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight">
-                                                    {slide.title}
+                                                    {service.title}
                                                 </h1>
-                                                <p className="text-3xl md:text-4xl lg:text-5xl font-light text-white/90">
-                                                    {slide.subtitle}
-                                                </p>
                                             </div>
                                             
                                             <p 
-                                                className="text-lg md:text-xl text-white/80 max-w-lg animate-fade-in"
+                                                className="text-lg md:text-xl text-white/80 max-w-lg animate-fade-in line-clamp-3"
                                                 style={{ animationDelay: "0.2s" }}
                                             >
-                                                {slide.description}
+                                                {service.content}
                                             </p>
 
                                             <div 
                                                 className="flex flex-wrap gap-4 pt-4 animate-fade-in"
                                                 style={{ animationDelay: "0.3s" }}
                                             >
-                                                <Button
-                                                    size="lg"
-                                                    className="bg-white text-gray-900 hover:bg-white/90 font-semibold px-8 py-6 text-base"
-                                                >
-                                                    {slide.ctaText}
-                                                    <ArrowRight className="ml-2 h-5 w-5" />
-                                                </Button>
-                                                <Button
-                                                    size="lg"
-                                                    variant="outline"
-                                                    className="border-2 border-white bg-transparent !text-white hover:bg-white/20 px-8 py-6 text-base"
-                                                >
-                                                    Lihat Layanan
-                                                </Button>
+                                                <Link to={`/layanan/produk/${service._id}`}>
+                                                    <Button
+                                                        size="lg"
+                                                        className="bg-white text-gray-900 hover:bg-white/90 font-semibold px-8 py-6 text-base"
+                                                    >
+                                                        Lihat Detail
+                                                        <ArrowRight className="ml-2 h-5 w-5" />
+                                                    </Button>
+                                                </Link>
+                                                <Link to="/layanan/produk">
+                                                    <Button
+                                                        size="lg"
+                                                        variant="outline"
+                                                        className="border-2 border-white bg-transparent !text-white hover:bg-white/20 px-8 py-6 text-base"
+                                                    >
+                                                        Semua Layanan
+                                                    </Button>
+                                                </Link>
                                             </div>
                                         </div>
 
                                         {/* Illustration/Image */}
                                         <div className="hidden lg:flex justify-center items-center">
-                                            <div className="relative">
-                                                <div className="w-72 h-72 bg-white/10 rounded-full flex items-center justify-center backdrop-blur-sm border border-white/20">
-                                                    <span className="text-[120px]">{slide.image}</span>
+                                            {service.image ? (
+                                                <div className="w-80 h-80 rounded-3xl overflow-hidden shadow-2xl">
+                                                    <img
+                                                        src={getImageUrl(service.image)}
+                                                        alt={service.title}
+                                                        className="w-full h-full object-cover"
+                                                    />
                                                 </div>
-                                                {/* Floating elements */}
-                                                <div className="absolute -top-4 -right-4 w-20 h-20 bg-white/20 rounded-2xl flex items-center justify-center backdrop-blur-sm animate-bounce-slow">
-                                                    <span className="text-3xl">✨</span>
+                                            ) : (
+                                                <div className="w-80 h-80 bg-white/10 backdrop-blur-sm rounded-3xl flex items-center justify-center">
+                                                    <span className="text-9xl">
+                                                        {getCategoryIcon(service.category)}
+                                                    </span>
                                                 </div>
-                                                <div className="absolute -bottom-4 -left-4 w-16 h-16 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-sm animate-bounce-slow" style={{ animationDelay: "0.5s" }}>
-                                                    <span className="text-2xl">🎯</span>
-                                                </div>
-                                            </div>
+                                            )}
                                         </div>
                                     </div>
                                 </div>
@@ -171,28 +213,28 @@ const Hero = () => {
                 {/* Navigation Arrows */}
                 <button
                     onClick={scrollPrev}
-                    className="absolute left-4 top-1/2 -translate-y-1/2 z-20 w-12 h-12 rounded-full bg-white/20 backdrop-blur-sm border border-white/30 flex items-center justify-center text-white hover:bg-white/30 transition-colors"
+                    className="absolute left-4 top-1/2 -translate-y-1/2 z-20 w-12 h-12 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center text-white hover:bg-white/30 transition-colors"
                     aria-label="Previous slide"
                 >
                     <ChevronLeft className="w-6 h-6" />
                 </button>
                 <button
                     onClick={scrollNext}
-                    className="absolute right-4 top-1/2 -translate-y-1/2 z-20 w-12 h-12 rounded-full bg-white/20 backdrop-blur-sm border border-white/30 flex items-center justify-center text-white hover:bg-white/30 transition-colors"
+                    className="absolute right-4 top-1/2 -translate-y-1/2 z-20 w-12 h-12 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center text-white hover:bg-white/30 transition-colors"
                     aria-label="Next slide"
                 >
                     <ChevronRight className="w-6 h-6" />
                 </button>
             </Carousel>
 
-            {/* Dots Indicator */}
+            {/* Dots Navigation */}
             <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-20 flex gap-2">
-                {slides.map((_, index) => (
+                {services.map((_, index) => (
                     <button
                         key={index}
                         onClick={() => scrollTo(index)}
-                        className={`w-3 h-3 rounded-full transition-all duration-300 ${
-                            index === current
+                        className={`w-3 h-3 rounded-full transition-all ${
+                            current === index
                                 ? "bg-white w-8"
                                 : "bg-white/50 hover:bg-white/70"
                         }`}

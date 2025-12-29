@@ -66,7 +66,7 @@ const RegisterPage = () => {
     };
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-red-800 via-red-700 to-red-900 p-4">
+        <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-rose-900 via-red-800 to-slate-900 p-4">
             {/* Background decoration */}
             <div className="absolute inset-0 overflow-hidden">
                 <div className="absolute top-20 left-10 w-72 h-72 bg-white/5 rounded-full blur-3xl"></div>
@@ -159,7 +159,7 @@ const RegisterPage = () => {
 
                             <Button
                                 type="submit"
-                                className="w-full bg-red-600 hover:bg-red-700"
+                                className="w-full bg-rose-600 hover:bg-rose-700"
                                 disabled={loading}
                             >
                                 {loading ? (
@@ -178,7 +178,7 @@ const RegisterPage = () => {
                         <>
                             <div className="mt-6 text-center text-sm text-gray-600">
                                 Sudah punya akun?{' '}
-                                <Link to="/login" className="text-red-600 hover:underline font-medium">
+                                <Link to="/login" className="text-rose-600 hover:underline font-medium">
                                     Masuk disini
                                 </Link>
                             </div>

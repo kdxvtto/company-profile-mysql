@@ -6,6 +6,7 @@
  */
 
 import { Button } from "@/components/ui/button";
+import { Link } from "react-router-dom";
 import { Bookmark, ArrowRight, Mail, Loader2 } from "lucide-react";
 
 // ============================================================================
@@ -99,7 +100,7 @@ export function ButtonDisabled() {
 export function ButtonAsLink() {
     return (
         <Button asChild>
-            <a href="/apply">Go to Application</a>
+            <Link to="/apply">Go to Application</Link>
         </Button>
     );
 }

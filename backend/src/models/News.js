@@ -13,6 +13,11 @@ const newsSchema = new mongoose.Schema({
         type: [String],
         required: true,
     },
+    category: {
+        type: String,
+        enum: ["Berita", "Pengumuman", "Promosi"],
+        default: "Berita",
+    },
     date: {
         type: Date,
         default: Date.now,

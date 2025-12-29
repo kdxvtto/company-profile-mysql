@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Plus, Pencil, Trash2, Search, Loader2 } from 'lucide-react';
+import { Plus, Pencil, Trash2, Search, Loader2, Facebook, Instagram } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -12,6 +12,18 @@ import {
     DialogFooter,
 } from '@/components/ui/dialog';
 import { teamAPI } from '@/lib/api';
+
+// Base URL untuk gambar dari backend
+const API_BASE_URL = 'http://localhost:3000';
+
+// Helper function untuk mendapatkan URL gambar yang benar
+const getImageUrl = (imagePath) => {
+    if (!imagePath) return null;
+    // Jika sudah URL lengkap, kembalikan langsung
+    if (imagePath.startsWith('http')) return imagePath;
+    // Jika path relatif, tambahkan base URL
+    return `${API_BASE_URL}${imagePath}`;
+};
 
 const TeamPage = () => {
     const [team, setTeam] = useState([]);
@@ -194,9 +206,9 @@ const TeamPage = () => {
                                         <tr key={member._id} className="border-b border-gray-100 hover:bg-gray-50">
                                             <td className="py-3 px-4">
                                                 <div className="w-12 h-12 rounded-full bg-gray-200 overflow-hidden">
-                                                    {member.image ? (
+                                                {member.image ? (
                                                         <img
-                                                            src={member.image}
+                                                            src={getImageUrl(member.image)}
                                                             alt={member.name}
                                                             className="w-full h-full object-cover"
                                                         />
@@ -210,12 +222,16 @@ const TeamPage = () => {
                                             <td className="py-3 px-4 font-medium text-gray-900">{member.name}</td>
                                             <td className="py-3 px-4 text-gray-600">{member.position}</td>
                                             <td className="py-3 px-4">
-                                                <div className="flex gap-2">
+                                                <div className="flex gap-3">
                                                     {member.facebook && (
-                                                        <a href={member.facebook} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline text-sm">FB</a>
+                                                        <a href={member.facebook} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:text-blue-800 transition-colors">
+                                                            <Facebook className="w-5 h-5" />
+                                                        </a>
                                                     )}
                                                     {member.instagram && (
-                                                        <a href={member.instagram} target="_blank" rel="noopener noreferrer" className="text-pink-600 hover:underline text-sm">IG</a>
+                                                        <a href={member.instagram} target="_blank" rel="noopener noreferrer" className="text-pink-600 hover:text-pink-800 transition-colors">
+                                                            <Instagram className="w-5 h-5" />
+                                                        </a>
                                                     )}
                                                     {!member.facebook && !member.instagram && (
                                                         <span className="text-gray-400 text-sm">-</span>

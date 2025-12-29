@@ -13,6 +13,18 @@ import {
 } from '@/components/ui/dialog';
 import { newsAPI } from '@/lib/api';
 
+// Base URL untuk gambar dari backend
+const API_BASE_URL = 'http://localhost:3000';
+
+// Helper function untuk mendapatkan URL gambar yang benar
+const getImageUrl = (imagePath) => {
+    if (!imagePath) return null;
+    // Jika sudah URL lengkap, kembalikan langsung
+    if (imagePath.startsWith('http')) return imagePath;
+    // Jika path relatif, tambahkan base URL
+    return `${API_BASE_URL}${imagePath}`;
+};
+
 const NewsPage = () => {
     const [news, setNews] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -22,6 +34,7 @@ const NewsPage = () => {
     const [formData, setFormData] = useState({
         title: '',
         content: '',
+        category: 'Berita',
         image: null,
     });
     const [submitting, setSubmitting] = useState(false);
@@ -67,6 +80,7 @@ const NewsPage = () => {
             const data = new FormData();
             data.append('title', formData.title);
             data.append('content', formData.content);
+            data.append('category', formData.category);
             if (formData.image) {
                 data.append('image', formData.image);
             }
@@ -107,6 +121,7 @@ const NewsPage = () => {
             setFormData({
                 title: newsItem.title,
                 content: newsItem.content,
+                category: newsItem.category || '',
                 image: null,
             });
         } else {
@@ -114,6 +129,7 @@ const NewsPage = () => {
             setFormData({
                 title: '',
                 content: '',
+                category: 'Berita',
                 image: null,
             });
         }
@@ -126,6 +142,7 @@ const NewsPage = () => {
         setFormData({
             title: '',
             content: '',
+            category: 'Berita',
             image: null,
         });
     };
@@ -185,7 +202,7 @@ const NewsPage = () => {
                                         <div className="w-24 h-24 flex-shrink-0 rounded-lg overflow-hidden bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
                                             {item.image && item.image.length > 0 ? (
                                                 <img
-                                                    src={item.image[0]}
+                                                    src={getImageUrl(item.image[0])}
                                                     alt={item.title}
                                                     className="w-full h-full object-cover"
                                                 />
@@ -263,6 +280,19 @@ const NewsPage = () => {
                                     className="w-full min-h-[200px] px-3 py-2 border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                                     required
                                 />
+                            </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="category">Kategori</Label>
+                                <select
+                                    id="category"
+                                    value={formData.category}
+                                    onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                                    className="w-full px-3 py-2 border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                >
+                                    <option value="Berita">Berita</option>
+                                    <option value="Pengumuman">Pengumuman</option>
+                                    <option value="Promosi">Promosi</option>
+                                </select>
                             </div>
                             <div className="space-y-2">
                                 <Label htmlFor="image">Gambar</Label>

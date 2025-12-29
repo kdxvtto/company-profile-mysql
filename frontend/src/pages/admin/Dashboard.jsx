@@ -1,37 +1,67 @@
-import { Users, Briefcase, Newspaper, UserCog, TrendingUp, ArrowUpRight, ArrowDownRight } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Users, Briefcase, Newspaper, UserCog, TrendingUp, ArrowUpRight, Loader2 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { teamAPI, servicesAPI, newsAPI, usersAPI } from '@/lib/api';
 
 const Dashboard = () => {
-    const stats = [
+    const [loading, setLoading] = useState(true);
+    const [stats, setStats] = useState({
+        team: 0,
+        services: 0,
+        news: 0,
+        users: 0,
+    });
+
+    // Fetch all stats from database
+    useEffect(() => {
+        const fetchStats = async () => {
+            try {
+                setLoading(true);
+                const [teamRes, servicesRes, newsRes, usersRes] = await Promise.all([
+                    teamAPI.getAll(),
+                    servicesAPI.getAll(),
+                    newsAPI.getAll(),
+                    usersAPI.getAll(),
+                ]);
+
+                setStats({
+                    team: teamRes.data.data?.length || 0,
+                    services: servicesRes.data.data?.length || 0,
+                    news: newsRes.data.data?.length || 0,
+                    users: usersRes.data.data?.length || 0,
+                });
+            } catch (error) {
+                console.error('Error fetching stats:', error);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchStats();
+    }, []);
+
+    const statsCards = [
         {
             title: 'Total Team',
-            value: '12',
-            change: '+2',
-            trend: 'up',
+            value: stats.team,
             icon: Users,
             color: 'bg-blue-500',
         },
         {
             title: 'Total Services',
-            value: '8',
-            change: '+1',
-            trend: 'up',
+            value: stats.services,
             icon: Briefcase,
             color: 'bg-emerald-500',
         },
         {
             title: 'Total News',
-            value: '24',
-            change: '+5',
-            trend: 'up',
+            value: stats.news,
             icon: Newspaper,
             color: 'bg-purple-500',
         },
         {
             title: 'Total Users',
-            value: '3',
-            change: '0',
-            trend: 'neutral',
+            value: stats.users,
             icon: UserCog,
             color: 'bg-orange-500',
         },
@@ -54,7 +84,7 @@ const Dashboard = () => {
 
             {/* Stats Cards */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                {stats.map((stat, index) => {
+                {statsCards.map((stat, index) => {
                     const Icon = stat.icon;
                     return (
                         <Card key={index} className="relative overflow-hidden">
@@ -62,20 +92,13 @@ const Dashboard = () => {
                                 <div className="flex items-center justify-between">
                                     <div>
                                         <p className="text-sm font-medium text-gray-600">{stat.title}</p>
-                                        <p className="text-3xl font-bold text-gray-900 mt-2">{stat.value}</p>
-                                        <div className="flex items-center mt-2">
-                                            {stat.trend === 'up' ? (
-                                                <ArrowUpRight className="w-4 h-4 text-green-500" />
-                                            ) : stat.trend === 'down' ? (
-                                                <ArrowDownRight className="w-4 h-4 text-red-500" />
-                                            ) : null}
-                                            <span className={`text-sm ${
-                                                stat.trend === 'up' ? 'text-green-500' : 
-                                                stat.trend === 'down' ? 'text-red-500' : 'text-gray-500'
-                                            }`}>
-                                                {stat.change} this month
-                                            </span>
-                                        </div>
+                                        {loading ? (
+                                            <div className="flex items-center mt-2">
+                                                <Loader2 className="w-6 h-6 animate-spin text-gray-400" />
+                                            </div>
+                                        ) : (
+                                            <p className="text-3xl font-bold text-gray-900 mt-2">{stat.value}</p>
+                                        )}
                                     </div>
                                     <div className={`w-12 h-12 ${stat.color} rounded-xl flex items-center justify-center`}>
                                         <Icon className="w-6 h-6 text-white" />
@@ -129,7 +152,7 @@ const Dashboard = () => {
                             <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
                                 <div>
                                     <p className="font-medium text-gray-900">Last Login</p>
-                                    <p className="text-sm text-gray-600">Today, 10:30 AM</p>
+                                    <p className="text-sm text-gray-600">Today, {new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}</p>
                                 </div>
                             </div>
                             <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">

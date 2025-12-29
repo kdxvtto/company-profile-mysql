@@ -45,7 +45,7 @@ export const getNewsById = async (req, res) => {
 export const createNews = async (req,res) => {
     const image = req.file ? `/uploads/${req.file.filename}` : null;
     try{
-        const { title, content, date } = req.body;
+        const { title, content, date, category } = req.body;
         if(!title || !content || !image) {
             // Jika payload kurang, hapus file yang terlanjur di-upload
             if(image) await removeFile(image);
@@ -54,7 +54,14 @@ export const createNews = async (req,res) => {
                 message: "All fields are required" 
             });
         }
-        const news = new News({ title, content, image, date });
+        // Image harus berupa array sesuai model
+        const news = new News({ 
+            title, 
+            content, 
+            image: [image],  // Simpan sebagai array
+            date, 
+            category 
+        });
         const newNews = await news.save();
         res.status(201).json({
             success: true,
@@ -133,7 +140,12 @@ export const deleteNews = async (req,res) => {
                 message: "News not found" 
             });
         }
-        if(news.image) await removeFile(news.image);
+        // Handle image sebagai array
+        if(news.image && news.image.length > 0) {
+            for(const img of news.image) {
+                await removeFile(img);
+            }
+        }
         res.status(200).json({
             success: true,
             data : news
