@@ -46,7 +46,7 @@ const SukuBungaPage = () => {
                     {/* LPS Image */}
                     <div className="bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-100">
                         <img
-                            src="http://localhost:3000/uploads/lps.jpg"
+                            src="https://bankwonogiri.co.id/public/uploads/news-43.jpg"
                             alt="Tingkat Bunga Penjaminan LPS"
                             className="w-full h-auto"
                         />
