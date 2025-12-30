@@ -101,7 +101,7 @@ const CompanyProfile = () => {
                 <div className="mt-16 text-center">
                     <div className="inline-flex items-center gap-3 bg-red-50 px-6 py-3 rounded-full">
                         <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
-                        <span className="text-red-700 font-medium">Melayani masyarakat Wonogiri sejak tahun 1982</span>
+                        <span className="text-red-700 font-medium">Melayani masyarakat Wonogiri sejak tahun 1993</span>
                     </div>
                 </div>
             </div>

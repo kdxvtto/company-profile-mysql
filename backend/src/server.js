@@ -1,5 +1,6 @@
 import mongoose from "mongoose";
 import express from "express";
+import compression from "compression";
 import { globalRateLimiter } from "./middlewares/rateLimiter.js";
 import { corsMiddleware } from "./middlewares/cors.js";
 import { helmetMiddleware } from "./middlewares/helmet.js";
@@ -17,10 +18,13 @@ import newsRoutes from "./routes/newsRouter.js";
 import creditUserRoutes from "./routes/creditUserRouter.js";
 import teamProfileRoutes from "./routes/teamProfileRouter.js";
 import authRoutes from "./routes/authRouter.js";
+import searchRoutes from "./routes/searchRouter.js";
 import { errorHandler, notFoundHandler } from "./middlewares/errorHandler.js";
 
 const app = express();
 
+// Compression middleware for Gzip responses
+app.use(compression());
 
 app.use(helmetMiddleware);
 app.use(corsMiddleware);
@@ -28,8 +32,14 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(globalRateLimiter);
 
+// Static files with cache headers
+const cacheOptions = { maxAge: '7d', etag: true };
 const uploadsDir = path.join(__dirname, "../public/uploads");
-app.use("/uploads", express.static(uploadsDir));
+const laporanDir = path.join(__dirname, "../public/laporan");
+const manualDir = path.join(__dirname, "../public/manual");
+app.use("/uploads", express.static(uploadsDir, cacheOptions));
+app.use("/laporan", express.static(laporanDir, cacheOptions));
+app.use("/manual", express.static(manualDir, cacheOptions));
 
 app.use("/api/users", userRoutes);
 app.use("/api/services", serviceRoutes);
@@ -37,6 +47,7 @@ app.use("/api/news", newsRoutes);
 app.use("/api/credit-users", creditUserRoutes);
 app.use("/api/team-profiles", teamProfileRoutes);
 app.use("/api/auth", authRoutes);
+app.use("/api/search", searchRoutes);
 
 app.use(notFoundHandler);
 app.use(errorHandler);

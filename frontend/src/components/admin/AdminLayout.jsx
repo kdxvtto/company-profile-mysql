@@ -1,4 +1,4 @@
-import { Outlet, useNavigate } from 'react-router-dom';
+import { Outlet, useNavigate, Link } from 'react-router-dom';
 import Sidebar from './Sidebar';
 import { Bell, Search, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -64,11 +64,10 @@ const AdminLayout = () => {
                                     </Button>
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent align="end" className="w-48">
-                                    <DropdownMenuItem>
-                                        Profile
-                                    </DropdownMenuItem>
-                                    <DropdownMenuItem>
-                                        Settings
+                                    <DropdownMenuItem asChild>
+                                        <Link to="/admin/settings" className="cursor-pointer w-full">
+                                            Settings
+                                        </Link>
                                     </DropdownMenuItem>
                                     <DropdownMenuItem onClick={handleLogout} className="text-red-600 cursor-pointer">
                                         Logout

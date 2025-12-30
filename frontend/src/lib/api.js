@@ -43,6 +43,8 @@ export const authAPI = {
     login: (credentials) => api.post('/auth/login', credentials),
     logout: () => api.post('/auth/logout'),
     getProfile: () => api.get('/auth/profile'),
+    updateProfile: (data) => api.put('/auth/profile', data),
+    changePassword: (data) => api.put('/auth/change-password', data),
 };
 
 // ========================
@@ -99,6 +101,13 @@ export const usersAPI = {
     create: (data) => api.post('/users', data),
     update: (id, data) => api.put(`/users/${id}`, data),
     delete: (id) => api.delete(`/users/${id}`),
+};
+
+// ========================
+// Search API
+// ========================
+export const searchAPI = {
+    search: (query) => api.get(`/search?q=${encodeURIComponent(query)}`),
 };
 
 export default api;

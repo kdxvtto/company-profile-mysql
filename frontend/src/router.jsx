@@ -15,6 +15,10 @@ import EDCPage from './pages/EDCPage';
 import ArtikelPage from './pages/ArtikelPage';
 import SukuBungaPage from './pages/SukuBungaPage';
 import PengaduanPage from './pages/PengaduanPage';
+import PublikasiPage from './pages/PublikasiPage';
+import HubungiKamiPage from './pages/HubungiKamiPage';
+import TermsPage from './pages/TermsPage';
+import PrivacyPage from './pages/PrivacyPage';
 
 // Auth pages
 import LoginPage from './pages/auth/LoginPage';
@@ -27,6 +31,7 @@ import TeamPage from './pages/admin/TeamPage';
 import ServicesPage from './pages/admin/ServicesPage';
 import NewsPage from './pages/admin/NewsPage';
 import UsersPage from './pages/admin/UsersPage';
+import SettingsPage from './pages/admin/SettingsPage';
 
 // Protected Route
 import ProtectedRoute from './components/auth/ProtectedRoute';
@@ -89,6 +94,22 @@ const router = createBrowserRouter([
         path: '/informasi/pengaduan',
         element: <PengaduanPage />,
     },
+    {
+        path: '/publikasi',
+        element: <PublikasiPage />,
+    },
+    {
+        path: '/hubungi',
+        element: <HubungiKamiPage />,
+    },
+    {
+        path: '/terms',
+        element: <TermsPage />,
+    },
+    {
+        path: '/privacy',
+        element: <PrivacyPage />,
+    },
     // Auth routes
     {
         path: '/login',
@@ -126,6 +147,10 @@ const router = createBrowserRouter([
             {
                 path: 'users',
                 element: <UsersPage />,
+            },
+            {
+                path: 'settings',
+                element: <SettingsPage />,
             },
         ],
     },

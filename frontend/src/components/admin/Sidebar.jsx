@@ -5,6 +5,7 @@ import {
     Briefcase, 
     Newspaper, 
     UserCog,
+    Settings,
     LogOut
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
@@ -38,6 +39,11 @@ const Sidebar = () => {
             title: 'Users',
             icon: UserCog,
             path: '/admin/users',
+        },
+        {
+            title: 'Settings',
+            icon: Settings,
+            path: '/admin/settings',
         },
     ];
 
