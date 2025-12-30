@@ -39,10 +39,21 @@ const serviceStorage = new CloudinaryStorage({
     },
 });
 
+// Storage for publication files (PDF)
+const publicationStorage = new CloudinaryStorage({
+    cloudinary: cloudinary,
+    params: {
+        folder: 'bankwonogiri/publications',
+        allowed_formats: ['pdf'],
+        resource_type: 'raw', // Important for non-image files like PDF
+    },
+});
+
 // Create multer instances
 export const uploadTeam = multer({ storage: teamStorage });
 export const uploadNews = multer({ storage: newsStorage });
 export const uploadService = multer({ storage: serviceStorage });
+export const uploadPublication = multer({ storage: publicationStorage });
 
 // Helper to delete image from Cloudinary
 export const deleteFromCloudinary = async (publicId) => {

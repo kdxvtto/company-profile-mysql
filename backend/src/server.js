@@ -20,6 +20,7 @@ import creditUserRoutes from "./routes/creditUserRouter.js";
 import teamProfileRoutes from "./routes/teamProfileRouter.js";
 import authRoutes from "./routes/authRouter.js";
 import searchRoutes from "./routes/searchRouter.js";
+import publicationRoutes from "./routes/publicationRouter.js";
 import { errorHandler, notFoundHandler } from "./middlewares/errorHandler.js";
 
 const app = express();
@@ -49,7 +50,7 @@ app.use("/api/credit-users", creditUserRoutes);
 app.use("/api/team-profiles", teamProfileRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/search", searchRoutes);
-
+app.use("/api/publications", publicationRoutes);
 // Health check endpoint for Railway/Render
 app.get("/health", (req, res) => {
     res.status(200).json({ status: "ok", timestamp: new Date().toISOString() });

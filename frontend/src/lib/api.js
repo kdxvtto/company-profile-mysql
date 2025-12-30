@@ -112,4 +112,19 @@ export const searchAPI = {
     search: (query) => api.get(`/search?q=${encodeURIComponent(query)}`),
 };
 
+// ========================
+// Publications API
+// ========================
+export const publicationsAPI = {
+    getAll: () => api.get('/publications'),
+    getById: (id) => api.get(`/publications/${id}`),
+    create: (formData) => api.post('/publications', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+    }),
+    update: (id, formData) => api.put(`/publications/${id}`, formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+    }),
+    delete: (id) => api.delete(`/publications/${id}`),
+};
+
 export default api;

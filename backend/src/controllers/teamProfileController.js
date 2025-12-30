@@ -1,6 +1,5 @@
-// Wrong before: nama import/instansiasi bentrok (const teamProfile = new teamProfile) dan kapitalisasi model.
 import TeamProfile from "../models/TeamProfile.js";
-import { removeFile } from "../utils/file.js";
+import { deleteFromCloudinary, getPublicIdFromUrl } from "../config/cloudinary.js";
 import mongoose from "mongoose";
 
 // Get all team profiles
@@ -9,127 +8,149 @@ export const getAllTeamProfiles = async (req, res) => {
         const teamProfiles = await TeamProfile.find();
         res.status(200).json({
             success: true,
-            data : teamProfiles
+            data: teamProfiles
         });
     } catch (error) {
         res.status(500).json({
             success: false,
-            message: error.message 
+            message: error.message
         });
     }
 };
 
 // Create team profile
-export const createTeamProfile= async (req,res) => {
+export const createTeamProfile = async (req, res) => {
     // Cloudinary returns full URL in req.file.path
     const image = req.file ? req.file.path : null;
-    try{
+    try {
         const { name, position, facebook, instagram } = req.body;
-        if(!name || !position || !image) {
-            // Jika input kurang, bersihkan file yang terlanjur di-upload
-            if(image) await removeFile(image);
-            return res.status(400).json({ 
-                success: false,
-                message: "Name, position, and image are required" 
-            });
-        }
-        const existingTeamProfile = await TeamProfile.findOne({name: { $regex: new RegExp(`^${name}$`, "i") }});
-        if(existingTeamProfile) {
-            if(image) await removeFile(image);
+        if (!name || !position || !image) {
             return res.status(400).json({
                 success: false,
-                message: "Team profile already exists" 
+                message: "Name, position, and image are required"
+            });
+        }
+        const existingTeamProfile = await TeamProfile.findOne({ name: { $regex: new RegExp(`^${name}$`, "i") } });
+        if (existingTeamProfile) {
+            // Delete uploaded image from Cloudinary
+            const publicId = getPublicIdFromUrl(image);
+            await deleteFromCloudinary(publicId);
+            return res.status(400).json({
+                success: false,
+                message: "Team profile already exists"
             });
         }
         const teamProfile = new TeamProfile({ name, position, image, facebook, instagram });
         const newTeamProfile = await teamProfile.save();
         res.status(201).json({
             success: true,
-            data : newTeamProfile
+            data: newTeamProfile
         });
     } catch (error) {
-        if(image) await removeFile(image);
-        res.status(500).json({ 
+        // Delete uploaded image from Cloudinary on error
+        if (image) {
+            const publicId = getPublicIdFromUrl(image);
+            await deleteFromCloudinary(publicId);
+        }
+        res.status(500).json({
             success: false,
-            message: error.message 
+            message: error.message
         });
     }
-}
+};
 
 // Update team profile
-export const updateTeamProfile = async (req,res) => {
+export const updateTeamProfile = async (req, res) => {
     // Cloudinary returns full URL in req.file.path
     const newImage = req.file ? req.file.path : null;
     try {
         const { id } = req.params;
-        if(!mongoose.Types.ObjectId.isValid(id)) {
-            if(newImage) await removeFile(newImage);
+        if (!mongoose.Types.ObjectId.isValid(id)) {
+            // Delete new image if ID invalid
+            if (newImage) {
+                const publicId = getPublicIdFromUrl(newImage);
+                await deleteFromCloudinary(publicId);
+            }
             return res.status(404).json({
                 success: false,
-                message: "Team profile not found" 
+                message: "Team profile not found"
             });
         }
         const teamProfile = await TeamProfile.findById(id);
-        if(!teamProfile) {
-            if(newImage) await removeFile(newImage);
+        if (!teamProfile) {
+            // Delete new image if profile not found
+            if (newImage) {
+                const publicId = getPublicIdFromUrl(newImage);
+                await deleteFromCloudinary(publicId);
+            }
             return res.status(404).json({
                 success: false,
-                message: "Team profile not found" 
+                message: "Team profile not found"
             });
         }
 
         const oldImage = teamProfile.image;
-        if(newImage) {
+        if (newImage) {
             teamProfile.image = newImage;
         }
         Object.assign(teamProfile, req.body);
         await teamProfile.save();
 
-        // Hapus gambar lama hanya setelah update sukses
-        if(newImage && oldImage) {
-            await removeFile(oldImage);
+        // Delete old image from Cloudinary after successful update
+        if (newImage && oldImage) {
+            const publicId = getPublicIdFromUrl(oldImage);
+            await deleteFromCloudinary(publicId);
         }
 
         res.status(200).json({
             success: true,
-            data : teamProfile
+            data: teamProfile
         });
     } catch (error) {
-        // Jika gagal, bersihkan file baru supaya tidak yatim
-        if(newImage) await removeFile(newImage);
-        res.status(500).json({ 
+        // Delete new image on error
+        if (newImage) {
+            const publicId = getPublicIdFromUrl(newImage);
+            await deleteFromCloudinary(publicId);
+        }
+        res.status(500).json({
             success: false,
-            message: error.message 
+            message: error.message
         });
     }
-}
+};
 
 // Delete team profile
-export const deleteTeamProfile = async (req,res) => {
-    try{
+export const deleteTeamProfile = async (req, res) => {
+    try {
         const { id } = req.params;
-        if(!mongoose.Types.ObjectId.isValid(id)) {
+        if (!mongoose.Types.ObjectId.isValid(id)) {
             return res.status(404).json({
                 success: false,
-                message: "Team profile not found" 
+                message: "Team profile not found"
             });
         }
         const teamProfile = await TeamProfile.findByIdAndDelete(id);
-        if(!teamProfile) {
+        if (!teamProfile) {
             return res.status(404).json({
                 success: false,
-                message: "Team profile not found" 
+                message: "Team profile not found"
             });
         }
-        if(teamProfile.image) await removeFile(teamProfile.image);
+        
+        // Delete image from Cloudinary
+        if (teamProfile.image) {
+            const publicId = getPublicIdFromUrl(teamProfile.image);
+            await deleteFromCloudinary(publicId);
+        }
+        
         res.status(200).json({
             success: true,
-            data : teamProfile
+            data: teamProfile
         });
     } catch (error) {
-        res.status(500).json({ 
+        res.status(500).json({
             success: false,
-            message: error.message 
+            message: error.message
         });
     }
-}
+};
