@@ -50,6 +50,11 @@ app.use("/api/team-profiles", teamProfileRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/search", searchRoutes);
 
+// Health check endpoint for Railway/Render
+app.get("/health", (req, res) => {
+    res.status(200).json({ status: "ok", timestamp: new Date().toISOString() });
+});
+
 app.use(notFoundHandler);
 app.use(errorHandler);
 
