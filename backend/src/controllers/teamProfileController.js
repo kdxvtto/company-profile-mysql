@@ -1,5 +1,5 @@
 // Wrong before: nama import/instansiasi bentrok (const teamProfile = new teamProfile) dan kapitalisasi model.
-import TeamProfile from "../models/teamProfile.js";
+import TeamProfile from "../models/TeamProfile.js";
 import { removeFile } from "../utils/file.js";
 import mongoose from "mongoose";
 

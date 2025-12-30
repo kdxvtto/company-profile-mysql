@@ -62,17 +62,21 @@ const PORT = process.env.PORT || 3000;
 
 const MONGOURI = process.env.MONGOURI || "mongodb://127.0.0.1:27017/company";
 
-// Only connect to DB and start the server when not running tests
-if (process.env.NODE_ENV !== "test") {
-  mongoose.connect(MONGOURI)
-    .then(() => console.log("Connected to MongoDB"))
-    .catch((err) => {
-      console.error("Failed to connect to MongoDB:", err.message);
-    });
+console.log("Environment:", process.env.NODE_ENV);
+console.log("Port:", PORT);
+console.log("MongoDB URI exists:", !!process.env.MONGOURI);
 
-  app.listen(PORT, '0.0.0.0', () => {
+// Start server first (for healthcheck)
+app.listen(PORT, '0.0.0.0', () => {
     console.log(`Server is running on port ${PORT}`);
+});
+
+// Then connect to MongoDB
+mongoose.connect(MONGOURI)
+  .then(() => console.log("Connected to MongoDB"))
+  .catch((err) => {
+    console.error("Failed to connect to MongoDB:", err.message);
   });
-}
 
 export default app;
+
