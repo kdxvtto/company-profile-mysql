@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Loader2, Eye, EyeOff } from 'lucide-react';
-import { usersAPI } from '@/lib/api';
+import { authAPI } from '@/lib/api';
 
 const RegisterPage = () => {
     const navigate = useNavigate();
@@ -48,11 +48,10 @@ const RegisterPage = () => {
         setLoading(true);
 
         try {
-            await usersAPI.create({
+            await authAPI.register({
                 name: formData.name,
                 email: formData.email,
                 password: formData.password,
-                role: 'admin',
             });
             setSuccess(true);
             setTimeout(() => {
