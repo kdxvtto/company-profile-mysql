@@ -5,10 +5,21 @@ import mongoose from "mongoose";
 // Get all publications
 export const getAllPublications = async (req, res) => {
     try {
-        const publications = await Publications.find().sort({ createdAt: -1 });
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 10;
+        const skip = (page - 1) * limit;
+        const publications = await Publications.find().sort({ createdAt: -1 }).skip(skip).limit(limit);
+        const totalPublications = await Publications.countDocuments();
+        const totalPages = Math.ceil(totalPublications / limit);
         res.status(200).json({
             success: true,
-            data: publications
+            data: publications,
+            pagination: {
+                totalPublications,
+                totalPages,
+                currentPage: page,
+                limit
+            }
         });
     } catch (error) {
         res.status(500).json({

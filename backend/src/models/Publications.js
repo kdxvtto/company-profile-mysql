@@ -19,4 +19,8 @@ const publicationsSchema = new mongoose.Schema({
 }
 )
 
+publicationsSchema.index({ category: 1 })
+publicationsSchema.index({ name: 1 })
+publicationsSchema.index({ createdAt: -1 })
+
 export default mongoose.model("Publications", publicationsSchema);

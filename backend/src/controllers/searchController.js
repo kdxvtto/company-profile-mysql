@@ -1,5 +1,7 @@
 import News from "../models/News.js";
 import Services from "../models/Services.js";
+import Publications from "../models/Publications.js";
+import TeamProfile from "../models/TeamProfile.js";
 
 // Search across news and services
 export const search = async (req, res) => {
@@ -31,12 +33,30 @@ export const search = async (req, res) => {
             ]
         }).limit(5).select('_id title content category');
 
+        // Search in Publications
+        const publicationsResults = await Publications.find({
+            $or: [
+                { name: searchRegex },
+                { category: searchRegex }
+            ]
+        }).limit(5).select('_id name category file');
+
+        // Search in Team Profile
+        const teamProfilesResults = await TeamProfile.find({
+            $or: [
+                { name: searchRegex },
+                { position: searchRegex }
+            ]
+        }).limit(5).select('_id name position image');
+
         res.status(200).json({
             success: true,
             data: {
                 news: newsResults,
                 services: servicesResults,
-                totalResults: newsResults.length + servicesResults.length
+                publications: publicationsResults,
+                teamProfiles: teamProfilesResults,
+                totalResults: newsResults.length + servicesResults.length + publicationsResults.length + teamProfilesResults.length
             }
         });
     } catch (error) {

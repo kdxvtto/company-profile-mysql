@@ -50,4 +50,7 @@ userSchema.pre("findOneAndUpdate", async function () {
   }
 });
 
+userSchema.index({ email: 1 })
+userSchema.index({ refreshToken: 1 })
+
 export default mongoose.model("User", userSchema);

@@ -26,5 +26,8 @@ const newsSchema = new mongoose.Schema({
     timestamps: true
 }
 );
+newsSchema.index({ category: 1 })
+newsSchema.index({ title: 1 })
+newsSchema.index({ createdAt: -1 })
 
 export default mongoose.model("News", newsSchema);

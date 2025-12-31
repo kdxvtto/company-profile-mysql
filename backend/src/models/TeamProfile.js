@@ -24,4 +24,8 @@ const teamProfileSchema = new mongoose.Schema({
 }
 );
 
+teamProfileSchema.index({ name: 1 })
+teamProfileSchema.index({ position: 1 })
+teamProfileSchema.index({ createdAt: -1 })
+
 export default mongoose.model("TeamProfile", teamProfileSchema);
