@@ -45,7 +45,7 @@ const Navbar = () => {
                         { label: "Whistleblowing System", href: "https://wbs.girisukadana.co.id/", external: true },
                         { label: "PPOB", href: "/layanan/ppob" },
                         { label: "EDC", href: "/layanan/edc" },
-                        { label: "Joss WA", href: "/layanan/joss-wa" },
+                        { label: "Joss WA", href: "#", disabled: true, noSoon: true },
                     ]
                 },
                 { 
@@ -172,10 +172,11 @@ const Navbar = () => {
                                                                 ) : (
                                                                     <Link
                                                                         key={subIdx}
-                                                                        to={subItem.href}
+                                                                        to={subItem.disabled ? '#' : subItem.href}
+                                                                        onClick={subItem.disabled ? (e) => e.preventDefault() : undefined}
                                                                         className={`block px-2 py-1.5 text-sm rounded ${subItem.disabled ? 'text-gray-400 cursor-not-allowed' : 'text-gray-700 hover:text-red-600 hover:bg-gray-50'}`}
                                                                     >
-                                                                        {subItem.disabled && '🔜 '}{subItem.label}
+                                                                        {subItem.disabled && !subItem.noSoon && '🔜 '}{subItem.label}
                                                                     </Link>
                                                                 )
                                                             ))}
