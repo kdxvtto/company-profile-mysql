@@ -92,9 +92,13 @@ api.interceptors.response.use(
             } catch (refreshError) {
                 processQueue(refreshError, null);
                 
-                // Refresh failed - logout user
+                // Refresh failed - clear token
                 localStorage.removeItem('token');
-                window.location.href = '/login';
+                
+                // Only redirect to login if on admin pages
+                if (window.location.pathname.startsWith('/admin')) {
+                    window.location.href = '/login';
+                }
                 
                 return Promise.reject(refreshError);
             } finally {
