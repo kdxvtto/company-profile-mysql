@@ -49,11 +49,23 @@ const publicationStorage = new CloudinaryStorage({
     },
 });
 
-// Create multer instances
-export const uploadTeam = multer({ storage: teamStorage });
-export const uploadNews = multer({ storage: newsStorage });
-export const uploadService = multer({ storage: serviceStorage });
-export const uploadPublication = multer({ storage: publicationStorage });
+// Create multer instances with file size limits
+export const uploadTeam = multer({ 
+    storage: teamStorage,
+    limits: { fileSize: 5 * 1024 * 1024 } // 5MB max for images
+});
+export const uploadNews = multer({ 
+    storage: newsStorage,
+    limits: { fileSize: 5 * 1024 * 1024 } // 5MB max for images
+});
+export const uploadService = multer({ 
+    storage: serviceStorage,
+    limits: { fileSize: 5 * 1024 * 1024 } // 5MB max for images
+});
+export const uploadPublication = multer({ 
+    storage: publicationStorage,
+    limits: { fileSize: 10 * 1024 * 1024 } // 10MB max for PDFs
+});
 
 // Helper to delete image from Cloudinary
 export const deleteFromCloudinary = async (publicId) => {

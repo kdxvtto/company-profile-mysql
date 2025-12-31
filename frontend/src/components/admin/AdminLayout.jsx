@@ -1,6 +1,7 @@
+import { useState } from 'react';
 import { Outlet, useNavigate, Link } from 'react-router-dom';
 import Sidebar from './Sidebar';
-import { Bell, Search, User } from 'lucide-react';
+import { Bell, Search, User, Menu } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useAuth } from '@/context/AuthContext';
@@ -14,6 +15,7 @@ import {
 const AdminLayout = () => {
     const { user, logout } = useAuth();
     const navigate = useNavigate();
+    const [sidebarOpen, setSidebarOpen] = useState(false);
 
     const handleLogout = () => {
         logout();
@@ -23,23 +25,31 @@ const AdminLayout = () => {
     return (
         <div className="min-h-screen bg-gray-100">
             {/* Sidebar */}
-            <Sidebar />
+            <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
 
             {/* Main Content */}
-            <div className="ml-64">
+            <div className="lg:ml-64 transition-all duration-300">
                 {/* Header */}
-                <header className="sticky top-0 z-40 bg-white border-b border-gray-200 shadow-sm">
+                <header className="sticky top-0 z-30 bg-white border-b border-gray-200 shadow-sm">
                     <div className="flex items-center justify-between h-16 px-4 lg:px-6">
                         {/* Left side */}
                         <div className="flex items-center gap-4">
-                            {/* Search */}
-                            <div className="flex items-center">
+                            {/* Hamburger menu for mobile */}
+                            <button
+                                onClick={() => setSidebarOpen(true)}
+                                className="lg:hidden p-2 rounded-lg hover:bg-gray-100 transition-colors"
+                            >
+                                <Menu className="w-6 h-6" />
+                            </button>
+
+                            {/* Search - hide on mobile */}
+                            <div className="hidden sm:flex items-center">
                                 <div className="relative">
                                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                                     <Input
                                         type="text"
                                         placeholder="Cari..."
-                                        className="pl-10 w-64 bg-gray-50 border-gray-200"
+                                        className="pl-10 w-48 md:w-64 bg-gray-50 border-gray-200"
                                     />
                                 </div>
                             </div>
