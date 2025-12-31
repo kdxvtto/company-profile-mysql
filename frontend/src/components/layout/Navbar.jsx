@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Search, Menu, X, ChevronDown, Loader2, FileText, Briefcase } from "lucide-react";
+import { Search, Menu, X, ChevronDown, Loader2, FileText, Briefcase, Users, BookOpen } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
     DropdownMenu,
@@ -14,7 +14,7 @@ const Navbar = () => {
     const [isOpen, setIsOpen] = useState(false);
     const [searchOpen, setSearchOpen] = useState(false);
     const [searchQuery, setSearchQuery] = useState("");
-    const [searchResults, setSearchResults] = useState({ news: [], services: [] });
+    const [searchResults, setSearchResults] = useState({ news: [], services: [], publications: [], teamProfiles: [] });
     const [searching, setSearching] = useState(false);
     const searchRef = useRef(null);
     const navigate = useNavigate();
@@ -99,7 +99,7 @@ const Navbar = () => {
             if (searchRef.current && !searchRef.current.contains(event.target)) {
                 setSearchOpen(false);
                 setSearchQuery("");
-                setSearchResults({ news: [], services: [] });
+                setSearchResults({ news: [], services: [], publications: [], teamProfiles: [] });
             }
         };
 
@@ -110,15 +110,19 @@ const Navbar = () => {
     const handleResultClick = (type, id) => {
         if (type === "news") {
             navigate(`/kegiatan/${id}`);
-        } else {
+        } else if (type === "services") {
             navigate(`/layanan/produk/${id}`);
+        } else if (type === "publications") {
+            navigate(`/publikasi`);
+        } else if (type === "teamProfiles") {
+            navigate(`/team`);
         }
         setSearchOpen(false);
         setSearchQuery("");
-        setSearchResults({ news: [], services: [] });
+        setSearchResults({ news: [], services: [], publications: [], teamProfiles: [] });
     };
 
-    const hasResults = searchResults.news.length > 0 || searchResults.services.length > 0;
+    const hasResults = searchResults.news?.length > 0 || searchResults.services?.length > 0 || searchResults.publications?.length > 0 || searchResults.teamProfiles?.length > 0;
 
     return (
         <nav className="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-sm border-b border-gray-100 shadow-sm">
@@ -275,6 +279,40 @@ const Navbar = () => {
                                                                 >
                                                                     <p className="text-sm font-medium text-gray-900 truncate">{item.title}</p>
                                                                     <p className="text-xs text-gray-500">{item.category}</p>
+                                                                </button>
+                                                            ))}
+                                                        </div>
+                                                    )}
+                                                    {searchResults.publications?.length > 0 && (
+                                                        <div className="p-2 border-t border-gray-100">
+                                                            <h4 className="text-xs font-bold text-gray-500 uppercase px-2 mb-2 flex items-center gap-1">
+                                                                <BookOpen className="w-3 h-3" /> Publikasi
+                                                            </h4>
+                                                            {searchResults.publications.map((item) => (
+                                                                <button
+                                                                    key={item._id}
+                                                                    onClick={() => handleResultClick("publications", item._id)}
+                                                                    className="w-full text-left px-3 py-2 hover:bg-gray-50 rounded-md"
+                                                                >
+                                                                    <p className="text-sm font-medium text-gray-900 truncate">{item.name}</p>
+                                                                    <p className="text-xs text-gray-500">{item.category}</p>
+                                                                </button>
+                                                            ))}
+                                                        </div>
+                                                    )}
+                                                    {searchResults.teamProfiles?.length > 0 && (
+                                                        <div className="p-2 border-t border-gray-100">
+                                                            <h4 className="text-xs font-bold text-gray-500 uppercase px-2 mb-2 flex items-center gap-1">
+                                                                <Users className="w-3 h-3" /> Tim
+                                                            </h4>
+                                                            {searchResults.teamProfiles.map((item) => (
+                                                                <button
+                                                                    key={item._id}
+                                                                    onClick={() => handleResultClick("teamProfiles", item._id)}
+                                                                    className="w-full text-left px-3 py-2 hover:bg-gray-50 rounded-md"
+                                                                >
+                                                                    <p className="text-sm font-medium text-gray-900 truncate">{item.name}</p>
+                                                                    <p className="text-xs text-gray-500">{item.position}</p>
                                                                 </button>
                                                             ))}
                                                         </div>
