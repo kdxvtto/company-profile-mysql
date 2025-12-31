@@ -1,6 +1,7 @@
 import mongoose from "mongoose";
 import express from "express";
 import compression from "compression";
+import cookieParser from "cookie-parser";
 import { globalRateLimiter } from "./middlewares/rateLimiter.js";
 import { corsMiddleware } from "./middlewares/cors.js";
 import { helmetMiddleware } from "./middlewares/helmet.js";
@@ -32,6 +33,7 @@ app.use(helmetMiddleware);
 app.use(corsMiddleware);
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(cookieParser());
 app.use(globalRateLimiter);
 
 // Static files with cache headers

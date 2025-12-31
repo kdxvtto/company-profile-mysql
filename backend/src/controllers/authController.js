@@ -1,8 +1,8 @@
 // Wrong before: default export object while router used named imports; bcrypt.comparePassword + jwt as string secret
 import bcrypt from "bcryptjs";
-import jwt from "jsonwebtoken";
 import User from "../models/User.js";
 import { blacklistToken } from "../utils/blacklistToken.js";
+import { generateAccessToken, generateRefreshToken } from "../utils/generateToken.js";
 
 export const register = async (req, res) => {
   try {
@@ -74,10 +74,19 @@ export const login = async (req, res) => {
         message: "Invalid credentials",
       });
     }
+    const payload = { id: user._id };
+    const token = generateAccessToken(payload);
+    const refreshToken = generateRefreshToken(payload);
+    user.refreshToken = refreshToken;
+    await user.save();
 
-    const token = jwt.sign({ id: user._id }, jwtSecret, {
-      expiresIn: "1h",
+    res.cookie("refreshToken", refreshToken, {
+      httpOnly: true,
+      secure: true,
+      sameSite: "strict",
+      maxAge: 7 * 24 * 60 * 60 * 1000,
     });
+
     const safeUser = user.toObject();
     delete safeUser.password;
 
@@ -85,6 +94,7 @@ export const login = async (req, res) => {
       success: true,
       data: safeUser,
       token,
+      refreshToken,
     });
   } catch (error) {
     return res.status(500).json({
@@ -94,7 +104,7 @@ export const login = async (req, res) => {
   }
 };
 
-export const logout = (req, res) => {
+export const logout = async (req, res) => {
   try {
     const token = req.headers.authorization?.split(" ")[1];
 
@@ -106,6 +116,11 @@ export const logout = (req, res) => {
     }
 
     blacklistToken(token);
+    const refreshToken = req.cookies.refreshToken;
+    if (refreshToken) {
+      await User.updateOne({ refreshToken }, { refreshToken: null });
+    }
+    res.clearCookie("refreshToken");
 
     return res.status(200).json({
       success: true,

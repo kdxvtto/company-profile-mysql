@@ -3,12 +3,28 @@ import axios from 'axios';
 // Untuk Vite, gunakan import.meta.env
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
 
+// Flag to prevent multiple refresh attempts
+let isRefreshing = false;
+let failedQueue = [];
+
+const processQueue = (error, token = null) => {
+    failedQueue.forEach(prom => {
+        if (error) {
+            prom.reject(error);
+        } else {
+            prom.resolve(token);
+        }
+    });
+    failedQueue = [];
+};
+
 // Create axios instance
 const api = axios.create({
     baseURL: API_BASE_URL,
     headers: {
         'Content-Type': 'application/json',
     },
+    withCredentials: true, // Important: enables cookies to be sent
 });
 
 // Request interceptor - add auth token
@@ -25,14 +41,67 @@ api.interceptors.request.use(
     }
 );
 
-// Response interceptor - handle errors
+// Response interceptor - handle 401 and refresh token
 api.interceptors.response.use(
     (response) => response,
-    (error) => {
-        if (error.response?.status === 401) {
-            localStorage.removeItem('token');
-            window.location.href = '/login';
+    async (error) => {
+        const originalRequest = error.config;
+
+        // If 401 and not already retrying
+        if (error.response?.status === 401 && !originalRequest._retry) {
+            // Skip refresh for login/register/refresh-token endpoints
+            if (originalRequest.url.includes('/auth/login') || 
+                originalRequest.url.includes('/auth/register') ||
+                originalRequest.url.includes('/auth/refresh-token')) {
+                return Promise.reject(error);
+            }
+
+            if (isRefreshing) {
+                // Queue requests while refreshing
+                return new Promise((resolve, reject) => {
+                    failedQueue.push({ resolve, reject });
+                }).then(token => {
+                    originalRequest.headers.Authorization = `Bearer ${token}`;
+                    return api(originalRequest);
+                }).catch(err => {
+                    return Promise.reject(err);
+                });
+            }
+
+            originalRequest._retry = true;
+            isRefreshing = true;
+
+            try {
+                // Call refresh token endpoint
+                const response = await axios.post(
+                    `${API_BASE_URL}/auth/refresh-token`,
+                    {},
+                    { withCredentials: true }
+                );
+
+                const newToken = response.data.data.accessToken;
+                localStorage.setItem('token', newToken);
+                
+                // Update authorization header
+                api.defaults.headers.common['Authorization'] = `Bearer ${newToken}`;
+                originalRequest.headers.Authorization = `Bearer ${newToken}`;
+
+                processQueue(null, newToken);
+                
+                return api(originalRequest);
+            } catch (refreshError) {
+                processQueue(refreshError, null);
+                
+                // Refresh failed - logout user
+                localStorage.removeItem('token');
+                window.location.href = '/login';
+                
+                return Promise.reject(refreshError);
+            } finally {
+                isRefreshing = false;
+            }
         }
+
         return Promise.reject(error);
     }
 );
@@ -47,6 +116,7 @@ export const authAPI = {
     getProfile: () => api.get('/auth/profile'),
     updateProfile: (data) => api.put('/auth/profile', data),
     changePassword: (data) => api.put('/auth/change-password', data),
+    refreshToken: () => api.post('/auth/refresh-token'),
 };
 
 // ========================
