@@ -16,7 +16,8 @@ const PublikasiPage = () => {
     const fetchPublications = async () => {
         try {
             setLoading(true);
-            const response = await publicationsAPI.getAll();
+            // Request with high limit for public page to show all publications
+            const response = await publicationsAPI.getAll({ limit: 100 });
             setPublications(response.data.data || []);
         } catch (error) {
             console.error('Error fetching publications:', error);
