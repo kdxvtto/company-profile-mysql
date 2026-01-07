@@ -9,7 +9,8 @@ export const loginSchema = z.object({
   email: z
     .string()
     .email("Format email tidak valid")
-    .regex(safeEmailRegex, "Email hanya boleh mengandung huruf, angka, titik, underscore, dan dash"),
+    .regex(safeEmailRegex, "Email hanya boleh mengandung huruf, angka, titik, underscore, dan dash")
+    .transform((val) => val.toLowerCase()),
   password: z.string().min(6, "Password minimal 6 karakter"),
 });
 
