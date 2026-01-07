@@ -15,7 +15,7 @@ export const globalRateLimiter = rateLimit({
 
 export const loginRateLimiter = rateLimit({
     windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 100, // limit each IP to 1000 login attempts per windowMs
+    max: 15, // limit each IP to 5 login attempts per windowMs
     standardHeaders : true,
     legacyHeaders : false,
     handler : (req, res) => {
