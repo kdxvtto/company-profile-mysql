@@ -1,0 +1,61 @@
+name: CI Check
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  frontend:
+    name: Frontend Build
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install Frontend dependencies
+        run: npm ci
+        working-directory: frontend
+
+      - name: Build Frontend
+        run: npm run build
+        working-directory: frontend
+
+  backend:
+    name: Backend Jest Tests
+    runs-on: ubuntu-latest
+
+    services:
+      mongodb:
+        image: mongo:latest
+        ports:
+          - 27017:27017
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: backend/package-lock.json
+
+      - name: Install Backend dependencies
+        run: npm ci
+        working-directory: backend
+
+      - name: Run Jest tests
+        run: npm test
+        working-directory: backend
+        env:
+          MONGOURI: mongodb://localhost:27017/test
+          JWT_SECRET: test
+          JWT_REFRESH_SECRET: test-refresh
+          SALT_ROUND: 10
+          CORS_ORIGINS: http://localhost:5173
