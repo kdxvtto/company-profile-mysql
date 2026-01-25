@@ -25,7 +25,7 @@ const AdminLayout = () => {
 
     const handleLogout = () => {
         logout();
-        navigate('/login');
+        navigate('/freyabpr/login');
     };
 
     // Search handler with debounce

@@ -21,7 +21,7 @@ const ProtectedRoute = ({ children }) => {
 
     if (!isAuthenticated) {
         console.log('[ProtectedRoute] Not authenticated, redirecting to login');
-        return <Navigate to="/login" state={{ from: location }} replace />;
+        return <Navigate to="/freyabpr/login" state={{ from: location }} replace />;
     }
 
     return children;

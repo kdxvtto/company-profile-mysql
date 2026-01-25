@@ -55,7 +55,7 @@ const RegisterPage = () => {
             });
             setSuccess(true);
             setTimeout(() => {
-                navigate('/login');
+                navigate('/freyabpr/login');
             }, 2000);
         } catch (err) {
             setError(err.response?.data?.message || 'Registrasi gagal. Silakan coba lagi.');
@@ -177,7 +177,7 @@ const RegisterPage = () => {
                         <>
                             <div className="mt-6 text-center text-sm text-gray-600">
                                 Sudah punya akun?{' '}
-                                <Link to="/login" className="text-rose-600 hover:underline font-medium">
+                                <Link to="/freyabpr/login" className="text-rose-600 hover:underline font-medium">
                                     Masuk disini
                                 </Link>
                             </div>

@@ -62,7 +62,7 @@ const Sidebar = ({ isOpen, onClose }) => {
 
     const handleLogout = () => {
         logout();
-        navigate('/login');
+        navigate('/freyabpr/login');
     };
 
     const handleNavClick = () => {

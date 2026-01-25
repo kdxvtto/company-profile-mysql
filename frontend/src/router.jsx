@@ -123,13 +123,13 @@ const router = createBrowserRouter([
         path: '/privacy',
         element: <LazyWrapper><PrivacyPage /></LazyWrapper>,
     },
-    // Auth routes
+    // Auth routes (hidden path)
     {
-        path: '/login',
+        path: '/freyabpr/login',
         element: <LazyWrapper><LoginPage /></LazyWrapper>,
     },
     {
-        path: '/register',
+        path: '/freyabpr/register',
         element: <LazyWrapper><RegisterPage /></LazyWrapper>,
     },
     // Admin routes (protected)
