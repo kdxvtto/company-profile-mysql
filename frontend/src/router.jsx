@@ -38,6 +38,7 @@ const AdminPublicationsPage = lazy(() => import('./pages/admin/PublicationsPage'
 const AdminGalleryPage = lazy(() => import('./pages/admin/GalleryPage'));
 const UsersPage = lazy(() => import('./pages/admin/UsersPage'));
 const SettingsPage = lazy(() => import('./pages/admin/SettingsPage'));
+const NotFoundPage = lazy(() => import('./pages/NotFoundPage'));
 
 // Protected Route (non-lazy, small component)
 import ProtectedRoute from './components/auth/ProtectedRoute';
@@ -54,6 +55,7 @@ const router = createBrowserRouter([
     {
         path: '/',
         element: <App />,
+        errorElement: <LazyWrapper><NotFoundPage /></LazyWrapper>,
     },
     {
         path: '/profil',
@@ -176,6 +178,11 @@ const router = createBrowserRouter([
                 element: <LazyWrapper><SettingsPage /></LazyWrapper>,
             },
         ],
+    },
+    // Catch all - 404
+    {
+        path: '*',
+        element: <LazyWrapper><NotFoundPage /></LazyWrapper>,
     },
 ]);
 
