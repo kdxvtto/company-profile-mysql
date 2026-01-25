@@ -103,7 +103,7 @@ describe("Auth API", () => {
      * 
      * Skenario:
      * 1. Buat user di database
-     * 2. Kirim POST request ke /api/auth/login
+     * 2. Kirim POST request ke /api/freyabpr/login
      * 3. Cek response status 200 dan ada token
      */
     it("should login successfully", async () => {
@@ -122,7 +122,7 @@ describe("Auth API", () => {
         // =====================
         // Kirim POST request ke endpoint login
         const res = await request(app)
-            .post("/api/auth/login")     // HTTP method dan endpoint
+            .post("/api/freyabpr/login")     // HTTP method dan endpoint
             .send({                       // Request body (JSON)
                 email: "test@mail.com",
                 password: "password123"
@@ -145,7 +145,7 @@ describe("Auth API", () => {
     it("should fail with 401 if credentials wrong", async () => {
         // Tidak perlu create user - kita test dengan email yang tidak ada
         const res = await request(app)
-            .post("/api/auth/login")
+            .post("/api/freyabpr/login")
             .send({
                 email: "nonexistent@mail.com",  // Email tidak terdaftar
                 password: "wrongpassword123"    // Password 6+ chars (lolos validasi)
@@ -163,7 +163,7 @@ describe("Auth API", () => {
      */
     it("should fail with 422 if validation fails", async () => {
         const res = await request(app)
-            .post("/api/auth/login")
+            .post("/api/freyabpr/login")
             .send({
                 email: "wrong@mail.com",
                 password: "123"  // Terlalu pendek! Minimal 6 karakter

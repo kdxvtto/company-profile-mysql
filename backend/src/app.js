@@ -60,7 +60,7 @@ app.use("/api/services", serviceRoutes);
 app.use("/api/news", newsRoutes);
 app.use("/api/credit-users", creditUserRoutes);
 app.use("/api/team-profiles", teamProfileRoutes);
-app.use("/api/auth", authRoutes);
+app.use("/api/freyabpr", authRoutes);
 app.use("/api/search", searchRoutes);
 app.use("/api/publications", publicationRoutes);
 app.use("/api/gallery", galleryRoutes);

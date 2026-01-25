@@ -50,9 +50,9 @@ api.interceptors.response.use(
         // If 401 and not already retrying
         if (error.response?.status === 401 && !originalRequest._retry) {
             // Skip refresh for login/register/refresh-token endpoints
-            if (originalRequest.url.includes('/auth/login') || 
-                originalRequest.url.includes('/auth/register') ||
-                originalRequest.url.includes('/auth/refresh-token')) {
+            if (originalRequest.url.includes('/freyabpr/login') || 
+                originalRequest.url.includes('/freyabpr/register') ||
+                originalRequest.url.includes('/freyabpr/refresh-token')) {
                 return Promise.reject(error);
             }
 
@@ -74,7 +74,7 @@ api.interceptors.response.use(
             try {
                 // Call refresh token endpoint
                 const response = await axios.post(
-                    `${API_BASE_URL}/auth/refresh-token`,
+                    `${API_BASE_URL}/freyabpr/refresh-token`,
                     {},
                     { withCredentials: true }
                 );
@@ -114,13 +114,13 @@ api.interceptors.response.use(
 // Auth API
 // ========================
 export const authAPI = {
-    login: (credentials) => api.post('/auth/login', credentials),
-    register: (data) => api.post('/auth/register', data),
-    logout: () => api.post('/auth/logout'),
-    getProfile: () => api.get('/auth/profile'),
-    updateProfile: (data) => api.put('/auth/profile', data),
-    changePassword: (data) => api.put('/auth/change-password', data),
-    refreshToken: () => api.post('/auth/refresh-token'),
+    login: (credentials) => api.post('/freyabpr/login', credentials),
+    register: (data) => api.post('/freyabpr/register', data),
+    logout: () => api.post('/freyabpr/logout'),
+    getProfile: () => api.get('/freyabpr/profile'),
+    updateProfile: (data) => api.put('/freyabpr/profile', data),
+    changePassword: (data) => api.put('/freyabpr/change-password', data),
+    refreshToken: () => api.post('/freyabpr/refresh-token'),
 };
 
 // ========================

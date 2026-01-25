@@ -4,7 +4,7 @@
  * =========================================
  * 
  * File ini untuk testing endpoint yang butuh AUTHENTICATION
- * Contoh: GET /api/auth/profile (harus login dulu)
+ * Contoh: GET /api/freyabpr/profile (harus login dulu)
  * 
  * PERBEDAAN DENGAN AUTH TEST:
  * - auth.test.js = test login/register (tanpa token)
@@ -76,7 +76,7 @@ describe("User Profile API", () => {
 
         // STEP 3: Login untuk dapat token
         const login = await request(app)
-            .post("/api/auth/login")
+            .post("/api/freyabpr/login")
             .send({
                 email: "test@mail.com",
                 password: "password123"
@@ -106,7 +106,7 @@ describe("User Profile API", () => {
      */
     it("should access profile with valid token", async () => {
         const res = await request(app)
-            .get("/api/auth/profile")
+            .get("/api/freyabpr/profile")
             // set() untuk menambahkan HTTP header
             // Format: "Bearer <token>" adalah standar JWT
             .set("Authorization", `Bearer ${token}`);
@@ -127,7 +127,7 @@ describe("User Profile API", () => {
      */
     it("should fail without token", async () => {
         const res = await request(app)
-            .get("/api/auth/profile");
+            .get("/api/freyabpr/profile");
             // Tidak ada .set("Authorization", ...) = tanpa token
 
         // Tanpa token = Unauthorized
@@ -140,7 +140,7 @@ describe("User Profile API", () => {
      * 1. Test dengan token invalid/expired
      *    it("should fail with invalid token", async () => {
      *        const res = await request(app)
-     *            .get("/api/auth/profile")
+     *            .get("/api/freyabpr/profile")
      *            .set("Authorization", "Bearer invalid_token_here");
      *        expect(res.statusCode).toBe(401);
      *    });
@@ -148,7 +148,7 @@ describe("User Profile API", () => {
      * 2. Test update profile
      *    it("should update profile", async () => {
      *        const res = await request(app)
-     *            .put("/api/auth/profile")
+     *            .put("/api/freyabpr/profile")
      *            .set("Authorization", `Bearer ${token}`)
      *            .send({ name: "New Name" });
      *        expect(res.statusCode).toBe(200);

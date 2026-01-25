@@ -12,7 +12,7 @@ const router = express.Router();
 //authRouter.js
 /**
  * @swagger
- * /api/auth/login:
+ * /api/freyabpr/login:
  *   post:
  *     summary: Login
  *     tags: [Auth]
@@ -64,7 +64,7 @@ const router = express.Router();
  */
 /**
  * @swagger
- * /api/auth/register:
+ * /api/freyabpr/register:
  *   post:
  *     summary: Register
  *     tags: [Auth]
@@ -116,7 +116,7 @@ const router = express.Router();
  */
 /**
  * @swagger
- * /api/auth/logout:
+ * /api/freyabpr/logout:
  *   post:
  *     summary: Logout
  *     tags: [Auth]
@@ -155,7 +155,7 @@ const router = express.Router();
  */
 /**
  * @swagger
- * /api/auth/profile:
+ * /api/freyabpr/profile:
  *   get:
  *     summary: Get Profile
  *     tags: [Auth]
@@ -201,7 +201,7 @@ const router = express.Router();
  */
 /**
  * @swagger
- * /api/auth/profile:
+ * /api/freyabpr/profile:
  *   put:
  *     summary: Update Profile
  *     tags: [Auth]
@@ -251,7 +251,7 @@ const router = express.Router();
  */
 /**
  * @swagger
- * /api/auth/refresh-token:
+ * /api/freyabpr/refresh-token:
  *   post:
  *     summary: Refresh Token
  *     tags: [Auth]
@@ -290,7 +290,7 @@ const router = express.Router();
  */
 /**
  * @swagger
- * /api/auth/change-password:
+ * /api/freyabpr/change-password:
  *   put:
  *     summary: Change Password
  *     tags: [Auth]
