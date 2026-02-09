@@ -1,11 +1,11 @@
 import User from "../models/User.js";
-import mongoose from "mongoose";
+import { parseId } from "../utils/parseId.js";
 
 // Get all users
 
 export const getAllUsers = async (req, res) => {
     try {
-        const users = await User.find().select("-password");
+        const users = await User.getAll();
         res.status(200).json({
             success: true,
             data : users
@@ -22,13 +22,13 @@ export const getAllUsers = async (req, res) => {
 
 export const getUserById = async (req, res) => {
     try {
-        const { id } = req.params;
-        if(!mongoose.Types.ObjectId.isValid(id)) {
-            return res.status(404).json({ message: "User not found" });
+        const id = parseId(req.params.id);
+        if(!id) {
+            return res.status(404).json({ success: false, message: "User not found" });
         }
-        const user = await User.findById(id).select("-password");
+        const user = await User.getById(id);
         if(!user) {
-            return res.status(404).json({ message: "User not found" });
+            return res.status(404).json({ success: false, message: "User not found" });
         }
         res.status(200).json({
             success: true,
@@ -46,8 +46,8 @@ export const getUserById = async (req, res) => {
 
 export const createUser = async (req,res) =>{
     try {
-        const { name, email, password } = req.body;
-        const existingUser = await User.findOne({ email });
+        const { name, email, password, role } = req.body;
+        const existingUser = await User.findByEmail(email);
         if(!name || !email || !password) {
             return res.status(400).json({ 
                 success: false,
@@ -60,8 +60,7 @@ export const createUser = async (req,res) =>{
                 message: "User already exists" 
             });
         }
-        const user = new User({ name, email, password });
-        const newUser = await user.save();
+        const newUser = await User.create({ name, email, password, role });
         res.status(201).json({
             success: true,
             data : newUser
@@ -79,28 +78,25 @@ export const createUser = async (req,res) =>{
 // Wrong before: cek email duplikat dilakukan setelah update tanpa mengecualikan diri sendiri, bisa menolak update valid.
 export const updateUser = async (req,res) => {
     try {
-        const { id } = req.params;
-        if(!mongoose.Types.ObjectId.isValid(id)) {
+        const id = parseId(req.params.id);
+        if(!id) {
             return res.status(404).json({
                 success: false,
                 message: "User not found" 
             });
         }
 
-        const existingUser = await User.findOne({ email : req.body.email, _id : { $ne : id } });
-        if(existingUser) {
-            return res.status(400).json({
-                success: false,
-                message: "User already exists" 
-            });
+        if (req.body.email) {
+            const existingUser = await User.findByEmail(req.body.email);
+            if(existingUser && existingUser._id !== id) {
+                return res.status(400).json({
+                    success: false,
+                    message: "User already exists" 
+                });
+            }
         }
 
-        const user = await User.findByIdAndUpdate(
-        id,
-        req.body, {
-            new : true,
-            runValidators : true
-        }).select("-password");
+        const user = await User.update(id, req.body);
         if(!user) {
             return res.status(404).json({
                 success: false,
@@ -124,14 +120,14 @@ export const updateUser = async (req,res) => {
 
 export const deleteUser = async (req,res) => {
     try{
-        const { id } = req.params;
-        if(!mongoose.Types.ObjectId.isValid(id)) {
+        const id = parseId(req.params.id);
+        if(!id) {
             return res.status(404).json({
                 success: false,
                 message: "User not found" 
             });
         }
-        const user = await User.findByIdAndDelete(id);
+        const user = await User.deleteById(id);
         if(!user) {
             return res.status(404).json({
                 success: false,

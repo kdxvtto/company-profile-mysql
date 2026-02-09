@@ -51,7 +51,7 @@ api.interceptors.response.use(
         if (error.response?.status === 401 && !originalRequest._retry) {
             // Skip refresh for login/register/refresh-token endpoints
             if (originalRequest.url.includes('/freyabpr/login') || 
-                originalRequest.url.includes('/freyabpr/register') ||
+                originalRequest.url.includes('/baldurbpr/register') ||
                 originalRequest.url.includes('/freyabpr/refresh-token')) {
                 return Promise.reject(error);
             }
@@ -115,7 +115,7 @@ api.interceptors.response.use(
 // ========================
 export const authAPI = {
     login: (credentials) => api.post('/freyabpr/login', credentials),
-    register: (data) => api.post('/freyabpr/register', data),
+    register: (data) => api.post('/baldurbpr/register', data),
     logout: () => api.post('/freyabpr/logout'),
     getProfile: () => api.get('/freyabpr/profile'),
     updateProfile: (data) => api.put('/freyabpr/profile', data),

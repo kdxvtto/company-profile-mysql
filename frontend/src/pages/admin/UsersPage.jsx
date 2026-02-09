@@ -37,9 +37,9 @@ const UsersPage = () => {
             console.error('Error fetching users:', error);
             // Use dummy data for demo
             setUsers([
-                { _id: '1', name: 'Super Admin', email: 'admin@bankwonogiri.co.id', role: 'superadmin', createdAt: '2024-01-01' },
-                { _id: '2', name: 'Admin 1', email: 'admin1@bankwonogiri.co.id', role: 'admin', createdAt: '2024-06-15' },
-                { _id: '3', name: 'Admin 2', email: 'admin2@bankwonogiri.co.id', role: 'admin', createdAt: '2024-10-20' },
+                { _id: '1', name: 'Admin Utama', email: 'admin@bankwonogiri.co.id', role: 'admin', createdAt: '2024-01-01' },
+                { _id: '2', name: 'Staff 1', email: 'staff1@bankwonogiri.co.id', role: 'staff', createdAt: '2024-06-15' },
+                { _id: '3', name: 'Staff 2', email: 'staff2@bankwonogiri.co.id', role: 'staff', createdAt: '2024-10-20' },
             ]);
         } finally {
             setLoading(false);
@@ -138,9 +138,9 @@ const UsersPage = () => {
     // Get role badge color
     const getRoleBadgeColor = (role) => {
         switch (role) {
-            case 'superadmin':
-                return 'bg-purple-100 text-purple-700';
             case 'admin':
+                return 'bg-purple-100 text-purple-700';
+            case 'staff':
                 return 'bg-blue-100 text-blue-700';
             default:
                 return 'bg-gray-100 text-gray-700';
@@ -228,7 +228,7 @@ const UsersPage = () => {
                                                     >
                                                         <Pencil className="w-4 h-4" />
                                                     </Button>
-                                                    {user.role !== 'superadmin' && (
+                                                    {user.role !== 'admin' && (
                                                         <Button
                                                             variant="ghost"
                                                             size="icon"
@@ -303,8 +303,8 @@ const UsersPage = () => {
                                     onChange={(e) => setFormData({ ...formData, role: e.target.value })}
                                     className="w-full px-3 py-2 border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                                 >
+                                    <option value="staff">Staff</option>
                                     <option value="admin">Admin</option>
-                                    <option value="superadmin">Super Admin</option>
                                 </select>
                             </div>
                         </div>

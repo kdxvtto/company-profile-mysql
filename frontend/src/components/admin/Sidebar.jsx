@@ -15,9 +15,9 @@ import { useAuth } from '@/context/AuthContext';
 
 const Sidebar = ({ isOpen, onClose }) => {
     const navigate = useNavigate();
-    const { logout } = useAuth();
+    const { user, logout } = useAuth();
 
-    const menuItems = [
+    const allMenuItems = [
         {
             title: 'Dashboard',
             icon: LayoutDashboard,
@@ -52,6 +52,7 @@ const Sidebar = ({ isOpen, onClose }) => {
             title: 'Users',
             icon: UserCog,
             path: '/admin/users',
+            adminOnly: true, // Only visible for admin role
         },
         {
             title: 'Settings',
@@ -59,6 +60,14 @@ const Sidebar = ({ isOpen, onClose }) => {
             path: '/admin/settings',
         },
     ];
+
+    // Filter menu items based on user role
+    const menuItems = allMenuItems.filter(item => {
+        if (item.adminOnly && user?.role !== 'admin') {
+            return false;
+        }
+        return true;
+    });
 
     const handleLogout = () => {
         logout();
@@ -147,3 +156,4 @@ const Sidebar = ({ isOpen, onClose }) => {
 };
 
 export default Sidebar;
+

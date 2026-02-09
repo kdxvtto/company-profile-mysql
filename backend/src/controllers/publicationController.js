@@ -1,16 +1,15 @@
 import Publications from "../models/Publications.js";
 import { deleteFromCloudinary, getPublicIdFromUrl } from "../config/cloudinary.js";
-import mongoose from "mongoose";
 import { createActivityLog } from "./activityLogController.js";
+import { parseId } from "../utils/parseId.js";
 
 // Get all publications
 export const getAllPublications = async (req, res) => {
     try {
         const page = parseInt(req.query.page) || 1;
         const limit = parseInt(req.query.limit) || 10;
-        const skip = (page - 1) * limit;
-        const publications = await Publications.find().sort({ createdAt: -1 }).skip(skip).limit(limit);
-        const totalPublications = await Publications.countDocuments();
+        const publications = await Publications.getAll({ page, limit });
+        const totalPublications = await Publications.count();
         const totalPages = Math.ceil(totalPublications / limit);
         res.status(200).json({
             success: true,
@@ -33,14 +32,14 @@ export const getAllPublications = async (req, res) => {
 // Get publication by ID
 export const getPublicationById = async (req, res) => {
     try {
-        const { id } = req.params;
-        if (!mongoose.Types.ObjectId.isValid(id)) {
+        const id = parseId(req.params.id);
+        if (!id) {
             return res.status(404).json({
                 success: false,
                 message: "Publication not found"
             });
         }
-        const publication = await Publications.findById(id);
+        const publication = await Publications.getById(id);
         if (!publication) {
             return res.status(404).json({
                 success: false,
@@ -73,12 +72,11 @@ export const createPublication = async (req, res) => {
             });
         }
 
-        const publication = new Publications({
+        const publication = await Publications.create({
             name,
             category: category || "Laporan",
             file: [file] // file is array in model
         });
-        await publication.save();
 
         // Log activity
         if (req.user) {
@@ -113,9 +111,9 @@ export const createPublication = async (req, res) => {
 export const updatePublication = async (req, res) => {
     const newFile = req.file ? req.file.path : null;
     try {
-        const { id } = req.params;
+        const id = parseId(req.params.id);
 
-        if (!mongoose.Types.ObjectId.isValid(id)) {
+        if (!id) {
             if (newFile) {
                 const publicId = getPublicIdFromUrl(newFile);
                 await deleteFromCloudinary(publicId, 'raw');
@@ -126,7 +124,7 @@ export const updatePublication = async (req, res) => {
             });
         }
 
-        const publication = await Publications.findById(id);
+        const publication = await Publications.getById(id);
         if (!publication) {
             if (newFile) {
                 const publicId = getPublicIdFromUrl(newFile);
@@ -140,12 +138,10 @@ export const updatePublication = async (req, res) => {
 
         const oldFiles = publication.file;
         
-        // Update fields
-        if (req.body.name) publication.name = req.body.name;
-        if (req.body.category) publication.category = req.body.category;
-        if (newFile) publication.file = [newFile];
-
-        await publication.save();
+        const updatedPublication = await Publications.update(id, {
+            ...req.body,
+            ...(newFile ? { file: [newFile] } : {})
+        });
 
         // Delete old files from Cloudinary after successful update
         if (newFile && oldFiles && oldFiles.length > 0) {
@@ -160,8 +156,8 @@ export const updatePublication = async (req, res) => {
             await createActivityLog({
                 action: 'update',
                 resource: 'publication',
-                resourceName: publication.name,
-                resourceId: publication._id,
+                resourceName: updatedPublication.name,
+                resourceId: updatedPublication._id,
                 userId: req.user.id,
                 userName: req.user.name || 'Admin'
             });
@@ -169,7 +165,7 @@ export const updatePublication = async (req, res) => {
 
         res.status(200).json({
             success: true,
-            data: publication
+            data: updatedPublication
         });
     } catch (error) {
         // Delete new file on error
@@ -187,15 +183,15 @@ export const updatePublication = async (req, res) => {
 // Delete publication
 export const deletePublication = async (req, res) => {
     try {
-        const { id } = req.params;
-        if (!mongoose.Types.ObjectId.isValid(id)) {
+        const id = parseId(req.params.id);
+        if (!id) {
             return res.status(404).json({
                 success: false,
                 message: "Publication not found"
             });
         }
 
-        const publication = await Publications.findByIdAndDelete(id);
+        const publication = await Publications.deleteById(id);
         if (!publication) {
             return res.status(404).json({
                 success: false,

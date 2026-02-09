@@ -102,7 +102,7 @@ const Navbar = () => {
                         { label: "Produk Layanan", href: "/layanan/produk" },
                         { label: "Pengajuan Kredit", href: "https://cdg.girisukadana.co.id/", external: true },
                         { label: "Simulasi Kredit", href: "https://cdg.girisukadana.co.id/web/simulations", external: true },
-                        { label: "Whistleblowing System", href: "https://wbs.girisukadana.co.id/", external: true },
+                        { label: "Whistleblowing System", href: "https://wbs.bankwonogiri.co.id/", external: true },
                         { label: "PPOB", href: "/layanan/ppob" },
                         { label: "EDC", href: "/layanan/edc" },
                         { label: "Joss WA", href: "#", disabled: true, noSoon: true },

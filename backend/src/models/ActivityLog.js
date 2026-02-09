@@ -1,40 +1,38 @@
-import mongoose from "mongoose";
+import pool from "../config/database.js";
 
-const activityLogSchema = new mongoose.Schema({
-    action: {
-        type: String,
-        required: true,
-        enum: ['create', 'update', 'delete']
-    },
-    resource: {
-        type: String,
-        required: true,
-        enum: ['news', 'team', 'service', 'publication', 'gallery', 'user']
-    },
-    resourceName: {
-        type: String,
-        required: true
-    },
-    resourceId: {
-        type: mongoose.Schema.Types.ObjectId,
-        required: true
-    },
-    userId: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'User',
-        required: true
-    },
-    userName: {
-        type: String,
-        required: true
-    }
-}, {
-    timestamps: true
-});
+const TABLE = "activity_logs";
 
-// Index for efficient querying
-activityLogSchema.index({ createdAt: -1 });
-activityLogSchema.index({ userId: 1 });
-activityLogSchema.index({ resource: 1 });
+const ActivityLog = {
+  async create({ action, resource, resourceName, resourceId, userId, userName }) {
+    const [result] = await pool.query(
+      `INSERT INTO ${TABLE} (action, resource, resourceName, resourceId, userId, userName)
+       VALUES (?, ?, ?, ?, ?, ?)`,
+      [action, resource, resourceName, resourceId, userId, userName]
+    );
 
-export default mongoose.model("ActivityLog", activityLogSchema);
+    const [rows] = await pool.query(
+      `SELECT id AS _id, action, resource, resourceName, resourceId, userId, userName, createdAt, updatedAt
+       FROM ${TABLE}
+       WHERE id = ?`,
+      [result.insertId]
+    );
+    return rows[0] ?? null;
+  },
+
+  async getAll({ limit = 10 } = {}) {
+    const safeLimit = Number.isFinite(Number(limit))
+      ? Math.min(100, Math.max(1, Number(limit)))
+      : 10;
+
+    const [rows] = await pool.query(
+      `SELECT id AS _id, action, resource, resourceName, resourceId, userId, userName, createdAt, updatedAt
+       FROM ${TABLE}
+       ORDER BY createdAt DESC
+       LIMIT ?`,
+      [safeLimit]
+    );
+    return rows;
+  },
+};
+
+export default ActivityLog;

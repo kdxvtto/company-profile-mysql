@@ -1,6 +1,7 @@
 import express from "express";
 import { getActivityLogs } from "../controllers/activityLogController.js";
 import verifyToken from "../middlewares/verifyToken.js";
+import { checkRole } from "../middlewares/checkRole.js";
 
 const router = express.Router();
 /**
@@ -20,7 +21,8 @@ const router = express.Router();
  *         description: Internal Server Error
  */
 
-// Get recent activity logs (protected)
-router.get("/", verifyToken, getActivityLogs);
+// Get recent activity logs (protected, admin only)
+router.get("/", verifyToken, checkRole("admin"), getActivityLogs);
 
 export default router;
+

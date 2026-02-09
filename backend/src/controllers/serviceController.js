@@ -1,12 +1,12 @@
 import Services from "../models/Services.js";
 import { deleteFromCloudinary, getPublicIdFromUrl } from "../config/cloudinary.js";
-import mongoose from "mongoose";
 import { createActivityLog } from "./activityLogController.js";
+import { parseId } from "../utils/parseId.js";
 
 // Get all services
 export const getAllServices = async (req, res) => {
     try {
-        const services = await Services.find();
+        const services = await Services.getAll();
         res.status(200).json({
             success: true,
             data: services
@@ -22,14 +22,14 @@ export const getAllServices = async (req, res) => {
 // Get service by ID
 export const getServiceById = async (req, res) => {
     try {
-        const { id } = req.params;
-        if (!mongoose.Types.ObjectId.isValid(id)) {
+        const id = parseId(req.params.id);
+        if (!id) {
             return res.status(404).json({
                 success: false,
                 message: "Service not found"
             });
         }
-        const service = await Services.findById(id);
+        const service = await Services.getById(id);
         if (!service) {
             return res.status(404).json({
                 success: false,
@@ -60,8 +60,7 @@ export const createService = async (req, res) => {
                 message: "All fields are required"
             });
         }
-        const service = new Services({ title, content, image, category });
-        const newService = await service.save();
+        const newService = await Services.create({ title, content, image, category });
         
         // Log activity
         if (req.user) {
@@ -97,8 +96,8 @@ export const updateService = async (req, res) => {
     // Cloudinary returns full URL in req.file.path
     const newImage = req.file ? req.file.path : null;
     try {
-        const { id } = req.params;
-        if (!mongoose.Types.ObjectId.isValid(id)) {
+        const id = parseId(req.params.id);
+        if (!id) {
             if (newImage) {
                 const publicId = getPublicIdFromUrl(newImage);
                 await deleteFromCloudinary(publicId);
@@ -108,7 +107,7 @@ export const updateService = async (req, res) => {
                 message: "Service not found"
             });
         }
-        const service = await Services.findById(id);
+        const service = await Services.getById(id);
         if (!service) {
             if (newImage) {
                 const publicId = getPublicIdFromUrl(newImage);
@@ -121,11 +120,10 @@ export const updateService = async (req, res) => {
         }
 
         const oldImage = service.image;
-        if (newImage) {
-            service.image = newImage;
-        }
-        Object.assign(service, req.body);
-        await service.save();
+        const updatedService = await Services.update(id, {
+            ...req.body,
+            ...(newImage ? { image: newImage } : {})
+        });
 
         // Delete old image from Cloudinary after successful update
         if (newImage && oldImage) {
@@ -138,8 +136,8 @@ export const updateService = async (req, res) => {
             await createActivityLog({
                 action: 'update',
                 resource: 'service',
-                resourceName: service.title,
-                resourceId: service._id,
+                resourceName: updatedService.title,
+                resourceId: updatedService._id,
                 userId: req.user.id,
                 userName: req.user.name || 'Admin'
             });
@@ -147,7 +145,7 @@ export const updateService = async (req, res) => {
 
         res.status(200).json({
             success: true,
-            data: service
+            data: updatedService
         });
     } catch (error) {
         // Delete new image on error
@@ -165,14 +163,14 @@ export const updateService = async (req, res) => {
 // Delete service
 export const deleteService = async (req, res) => {
     try {
-        const { id } = req.params;
-        if (!mongoose.Types.ObjectId.isValid(id)) {
+        const id = parseId(req.params.id);
+        if (!id) {
             return res.status(404).json({
                 success: false,
                 message: "Service not found"
             });
         }
-        const service = await Services.findByIdAndDelete(id);
+        const service = await Services.deleteById(id);
         if (!service) {
             return res.status(404).json({
                 success: false,

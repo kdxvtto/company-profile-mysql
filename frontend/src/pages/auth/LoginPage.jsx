@@ -119,12 +119,7 @@ const LoginPage = () => {
                         </Button>
                     </form>
 
-                    <div className="mt-6 text-center text-sm text-gray-600">
-                        Belum punya akun?{' '}
-                        <Link to="/register" className="text-rose-600 hover:underline font-medium">
-                            Daftar disini
-                        </Link>
-                    </div>
+
 
                     <div className="mt-4 text-center">
                         <Link to="/" className="text-sm text-gray-500 hover:text-gray-700">

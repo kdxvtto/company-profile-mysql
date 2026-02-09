@@ -16,7 +16,6 @@ dotenv.config({ path: path.resolve(__dirname, `../${envFile}`) });
 import userRoutes from "./routes/userRouter.js";
 import serviceRoutes from "./routes/serviceRouter.js";
 import newsRoutes from "./routes/newsRouter.js";
-import creditUserRoutes from "./routes/creditUserRouter.js";
 import teamProfileRoutes from "./routes/teamProfileRouter.js";
 import authRoutes from "./routes/authRouter.js";
 import searchRoutes from "./routes/searchRouter.js";
@@ -58,9 +57,9 @@ app.use("/uploads", express.static(uploadsDir, cacheOptions));
 app.use("/api/users", userRoutes);
 app.use("/api/services", serviceRoutes);
 app.use("/api/news", newsRoutes);
-app.use("/api/credit-users", creditUserRoutes);
 app.use("/api/team-profiles", teamProfileRoutes);
 app.use("/api/freyabpr", authRoutes);
+app.use("/api/baldurbpr", authRoutes); // Separate route for register (admin only)
 app.use("/api/search", searchRoutes);
 app.use("/api/publications", publicationRoutes);
 app.use("/api/gallery", galleryRoutes);

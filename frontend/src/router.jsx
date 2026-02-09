@@ -42,6 +42,7 @@ const NotFoundPage = lazy(() => import('./pages/NotFoundPage'));
 
 // Protected Route (non-lazy, small component)
 import ProtectedRoute from './components/auth/ProtectedRoute';
+import AdminOnlyRoute from './components/auth/AdminOnlyRoute';
 
 // Wrapper for lazy components
 const LazyWrapper = ({ children }) => (
@@ -131,7 +132,7 @@ const router = createBrowserRouter([
         element: <LazyWrapper><LoginPage /></LazyWrapper>,
     },
     {
-        path: '/freyabpr/register',
+        path: '/baldurbpr/register',
         element: <LazyWrapper><RegisterPage /></LazyWrapper>,
     },
     // Admin routes (protected)
@@ -171,7 +172,11 @@ const router = createBrowserRouter([
             },
             {
                 path: 'users',
-                element: <LazyWrapper><UsersPage /></LazyWrapper>,
+                element: (
+                    <AdminOnlyRoute>
+                        <LazyWrapper><UsersPage /></LazyWrapper>
+                    </AdminOnlyRoute>
+                ),
             },
             {
                 path: 'settings',
@@ -187,3 +192,4 @@ const router = createBrowserRouter([
 ]);
 
 export default router;
+

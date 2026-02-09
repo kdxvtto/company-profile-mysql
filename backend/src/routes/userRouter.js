@@ -3,6 +3,7 @@ import { createUser, getAllUsers, getUserById, updateUser, deleteUser } from "..
 import { validate } from "../middlewares/validate.js";
 import { createUserSchema, updateUserSchema } from "../validations/userValidation.js";
 import verifyToken from "../middlewares/verifyToken.js";
+import { checkRole } from "../middlewares/checkRole.js";
 
 const router = express.Router();
 
@@ -117,10 +118,12 @@ const router = express.Router();
  *         description: Internal Server Error
  */
 
-router.get("/", verifyToken, getAllUsers);
-router.get("/:id", verifyToken, getUserById);
-router.post("/", verifyToken, validate(createUserSchema), createUser);
-router.put("/:id", verifyToken, validate(updateUserSchema), updateUser);
-router.delete("/:id", verifyToken, deleteUser);
+// All user routes require admin role
+router.get("/", verifyToken, checkRole("admin"), getAllUsers);
+router.get("/:id", verifyToken, checkRole("admin"), getUserById);
+router.post("/", verifyToken, checkRole("admin"), validate(createUserSchema), createUser);
+router.put("/:id", verifyToken, checkRole("admin"), validate(updateUserSchema), updateUser);
+router.delete("/:id", verifyToken, checkRole("admin"), deleteUser);
 
 export default router;
+

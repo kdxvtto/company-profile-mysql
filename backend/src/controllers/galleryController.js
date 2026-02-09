@@ -1,16 +1,15 @@
 import Gallery from "../models/Gallery.js";
 import { getPublicIdFromUrl } from "../config/cloudinary.js";
 import { deleteFromCloudinary } from "../config/cloudinary.js";
-import mongoose from "mongoose";
 import { createActivityLog } from "./activityLogController.js";
+import { parseId } from "../utils/parseId.js";
 
 export const getGallery = async (req, res) => {
     try {
         const page = parseInt(req.query.page) || 1;
         const limit = parseInt(req.query.limit) || 10;
-        const skip = (page - 1) * limit;
-        const gallery = await Gallery.find().sort({ createdAt: -1 }).skip(skip).limit(limit);
-        const totalGallery = await Gallery.countDocuments();
+        const gallery = await Gallery.getAll({ page, limit });
+        const totalGallery = await Gallery.count();
         const totalPages = Math.ceil(totalGallery / limit);
         return res.status(200).json({
             success : true,
@@ -41,8 +40,7 @@ export const createGallery = async (req, res) => {
                 message : "Bad Request"
             })
         }
-        const gallery = new Gallery({ title, content, image : [image] });
-        await gallery.save();
+        const gallery = await Gallery.create({ title, content, image : [image] });
         
         // Log activity
         if (req.user) {
@@ -75,8 +73,8 @@ export const createGallery = async (req, res) => {
 export const updateGallery = async (req, res) => {
     const newImage = req.file ? req.file.path : null;
     try {
-        const { id } = req.params;
-        if(!mongoose.Types.ObjectId.isValid(id)) {
+        const id = parseId(req.params.id);
+        if(!id) {
             if (newImage) {
                 const publicId = getPublicIdFromUrl(newImage);
                 await deleteFromCloudinary(publicId);
@@ -86,7 +84,7 @@ export const updateGallery = async (req, res) => {
                 message : "Not Found"
             })
         }
-        const gallery = await Gallery.findById(id);
+        const gallery = await Gallery.getById(id);
         if (!gallery) {
             if (newImage) {
                 const publicId = getPublicIdFromUrl(newImage);
@@ -98,11 +96,10 @@ export const updateGallery = async (req, res) => {
             })
         }
         const oldImages = gallery.image;
-        if (newImage) {
-            gallery.image = [newImage];
-        }
-        Object.assign(gallery, req.body);
-        await gallery.save();
+        const updatedGallery = await Gallery.update(id, {
+            ...req.body,
+            ...(newImage ? { image: [newImage] } : {})
+        });
         if (newImage && oldImages && oldImages.length > 0) {
             for (const img of oldImages) {
                 const publicId = getPublicIdFromUrl(img);
@@ -115,8 +112,8 @@ export const updateGallery = async (req, res) => {
             await createActivityLog({
                 action: 'update',
                 resource: 'gallery',
-                resourceName: gallery.title,
-                resourceId: gallery._id,
+                resourceName: updatedGallery.title,
+                resourceId: updatedGallery._id,
                 userId: req.user.id,
                 userName: req.user.name || 'Admin'
             });
@@ -124,7 +121,7 @@ export const updateGallery = async (req, res) => {
         
         return res.status(200).json({
             success : true,
-            data : gallery
+            data : updatedGallery
         })
     } catch (error) {
         if (newImage) {
@@ -140,14 +137,14 @@ export const updateGallery = async (req, res) => {
 
 export const deleteGallery = async (req, res) => {
     try {
-        const { id } = req.params;
-        if(!mongoose.Types.ObjectId.isValid(id)) {
+        const id = parseId(req.params.id);
+        if(!id) {
             return res.status(404).json({
                 success : false,
                 message : "Gallery not found"
             })
         }
-        const gallery = await Gallery.findByIdAndDelete(id);
+        const gallery = await Gallery.deleteById(id);
         if (!gallery) {
             return res.status(404).json({
                 success : false,

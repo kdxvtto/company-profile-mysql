@@ -2,8 +2,12 @@ import { useState, useEffect } from 'react';
 import { Users, Briefcase, Newspaper, UserCog, TrendingUp, ArrowUpRight, Loader2, Plus, Pencil, Trash2 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { teamAPI, servicesAPI, newsAPI, usersAPI, activityAPI } from '@/lib/api';
+import { useAuth } from '@/context/AuthContext';
 
 const Dashboard = () => {
+    const { user } = useAuth();
+    const isAdmin = user?.role === 'admin';
+    
     const [loading, setLoading] = useState(true);
     const [stats, setStats] = useState({
         team: 0,
@@ -18,21 +22,36 @@ const Dashboard = () => {
         const fetchStats = async () => {
             try {
                 setLoading(true);
-                const [teamRes, servicesRes, newsRes, usersRes, activityRes] = await Promise.all([
+                
+                // Base API calls for all users
+                const apiCalls = [
                     teamAPI.getAll(),
                     servicesAPI.getAll(),
                     newsAPI.getAll(),
-                    usersAPI.getAll(),
-                    activityAPI.getAll({ limit: 5 }).catch(() => ({ data: { data: [] } })),
-                ]);
-
+                ];
+                
+                // Add admin-only API calls
+                if (isAdmin) {
+                    apiCalls.push(
+                        usersAPI.getAll().catch(() => ({ data: { data: [] } })),
+                        activityAPI.getAll({ limit: 5 }).catch(() => ({ data: { data: [] } }))
+                    );
+                }
+                
+                const results = await Promise.all(apiCalls);
+                
+                const [teamRes, servicesRes, newsRes] = results;
+                
                 setStats({
                     team: teamRes.data.data?.length || teamRes.data.pagination?.totalItems || 0,
                     services: servicesRes.data.data?.length || 0,
                     news: newsRes.data.data?.length || newsRes.data.pagination?.totalNews || 0,
-                    users: usersRes.data.data?.length || 0,
+                    users: isAdmin && results[3] ? results[3].data.data?.length || 0 : 0,
                 });
-                setActivities(activityRes.data.data || []);
+                
+                if (isAdmin && results[4]) {
+                    setActivities(results[4].data.data || []);
+                }
             } catch (error) {
                 console.error('Error fetching stats:', error);
             } finally {
@@ -41,9 +60,10 @@ const Dashboard = () => {
         };
 
         fetchStats();
-    }, []);
+    }, [isAdmin]);
 
-    const statsCards = [
+    // Stats cards - filter based on role
+    const allStatsCards = [
         {
             title: 'Total Team',
             value: stats.team,
@@ -67,8 +87,17 @@ const Dashboard = () => {
             value: stats.users,
             icon: UserCog,
             color: 'bg-orange-500',
+            adminOnly: true,
         },
     ];
+
+    // Filter stats cards based on role
+    const statsCards = allStatsCards.filter(stat => {
+        if (stat.adminOnly && !isAdmin) {
+            return false;
+        }
+        return true;
+    });
 
     // Helper to format time ago
     const formatTimeAgo = (dateString) => {
@@ -125,7 +154,7 @@ const Dashboard = () => {
             </div>
 
             {/* Stats Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className={`grid grid-cols-1 md:grid-cols-2 ${isAdmin ? 'lg:grid-cols-4' : 'lg:grid-cols-3'} gap-6`}>
                 {statsCards.map((stat, index) => {
                     const Icon = stat.icon;
                     return (
@@ -153,47 +182,49 @@ const Dashboard = () => {
             </div>
 
             {/* Recent Activities & Quick Actions */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                {/* Recent Activities */}
-                <Card>
-                    <CardHeader>
-                        <CardTitle className="flex items-center gap-2">
-                            <TrendingUp className="w-5 h-5" />
-                            Aktivitas Terbaru
-                        </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <div className="space-y-3">
-                            {activities.length === 0 ? (
-                                <div className="text-center py-8 text-gray-500">
-                                    <TrendingUp className="w-10 h-10 mx-auto mb-2 opacity-50" />
-                                    <p className="text-sm">Belum ada aktivitas</p>
-                                </div>
-                            ) : (
-                                activities.map((activity, index) => {
-                                    const { icon: ActionIcon, color } = getActionStyle(activity.action);
-                                    return (
-                                        <div key={index} className="flex items-start gap-3 py-3 border-b border-gray-100 last:border-0">
-                                            <div className={`p-2 rounded-lg ${color}`}>
-                                                <ActionIcon className="w-4 h-4" />
+            <div className={`grid grid-cols-1 ${isAdmin ? 'lg:grid-cols-2' : ''} gap-6`}>
+                {/* Recent Activities - Admin Only */}
+                {isAdmin && (
+                    <Card>
+                        <CardHeader>
+                            <CardTitle className="flex items-center gap-2">
+                                <TrendingUp className="w-5 h-5" />
+                                Aktivitas Terbaru
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <div className="space-y-3">
+                                {activities.length === 0 ? (
+                                    <div className="text-center py-8 text-gray-500">
+                                        <TrendingUp className="w-10 h-10 mx-auto mb-2 opacity-50" />
+                                        <p className="text-sm">Belum ada aktivitas</p>
+                                    </div>
+                                ) : (
+                                    activities.map((activity, index) => {
+                                        const { icon: ActionIcon, color } = getActionStyle(activity.action);
+                                        return (
+                                            <div key={index} className="flex items-start gap-3 py-3 border-b border-gray-100 last:border-0">
+                                                <div className={`p-2 rounded-lg ${color}`}>
+                                                    <ActionIcon className="w-4 h-4" />
+                                                </div>
+                                                <div className="flex-1 min-w-0">
+                                                    <p className="font-medium text-gray-900 text-sm">
+                                                        {translateAction(activity.action)} {translateResource(activity.resource)}
+                                                    </p>
+                                                    <p className="text-xs text-gray-600 truncate">"{activity.resourceName}"</p>
+                                                    <p className="text-xs text-gray-400 mt-1">oleh {activity.userName}</p>
+                                                </div>
+                                                <span className="text-xs text-gray-400 whitespace-nowrap">
+                                                    {formatTimeAgo(activity.createdAt)}
+                                                </span>
                                             </div>
-                                            <div className="flex-1 min-w-0">
-                                                <p className="font-medium text-gray-900 text-sm">
-                                                    {translateAction(activity.action)} {translateResource(activity.resource)}
-                                                </p>
-                                                <p className="text-xs text-gray-600 truncate">"{activity.resourceName}"</p>
-                                                <p className="text-xs text-gray-400 mt-1">oleh {activity.userName}</p>
-                                            </div>
-                                            <span className="text-xs text-gray-400 whitespace-nowrap">
-                                                {formatTimeAgo(activity.createdAt)}
-                                            </span>
-                                        </div>
-                                    );
-                                })
-                            )}
-                        </div>
-                    </CardContent>
-                </Card>
+                                        );
+                                    })
+                                )}
+                            </div>
+                        </CardContent>
+                    </Card>
+                )}
 
                 {/* Quick Stats */}
                 <Card>
@@ -217,6 +248,12 @@ const Dashboard = () => {
                             </div>
                             <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
                                 <div>
+                                    <p className="font-medium text-gray-900">Your Role</p>
+                                    <p className="text-sm text-gray-600 capitalize">{user?.role || 'Unknown'}</p>
+                                </div>
+                            </div>
+                            <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                                <div>
                                     <p className="font-medium text-gray-900">System Version</p>
                                     <p className="text-sm text-gray-600">v1.0.0</p>
                                 </div>
@@ -230,3 +267,4 @@ const Dashboard = () => {
 };
 
 export default Dashboard;
+

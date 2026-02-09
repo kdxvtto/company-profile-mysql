@@ -1,16 +1,15 @@
 import News from "../models/News.js";
 import { deleteFromCloudinary, getPublicIdFromUrl } from "../config/cloudinary.js";
-import mongoose from "mongoose";
 import { createActivityLog } from "./activityLogController.js";
+import { parseId } from "../utils/parseId.js";
 
 // Get all news
 export const getAllNews = async (req, res) => {
     try {
         const page = parseInt(req.query.page) || 1;
         const limit = parseInt(req.query.limit) || 10;
-        const skip = (page - 1) * limit;
-        const news = await News.find().sort({ createdAt: -1 }).skip(skip).limit(limit);
-        const totalNews = await News.countDocuments();
+        const news = await News.getAll({ page, limit });
+        const totalNews = await News.count();
         const totalPages = Math.ceil(totalNews / limit);
         res.status(200).json({
             success: true,
@@ -33,14 +32,14 @@ export const getAllNews = async (req, res) => {
 // Get news by ID
 export const getNewsById = async (req, res) => {
     try {
-        const { id } = req.params;
-        if (!mongoose.Types.ObjectId.isValid(id)) {
+        const id = parseId(req.params.id);
+        if (!id) {
             return res.status(404).json({
                 success: false,
                 message: "News not found"
             });
         }
-        const news = await News.findById(id);
+        const news = await News.getById(id);
         if (!news) {
             return res.status(404).json({
                 success: false,
@@ -71,15 +70,13 @@ export const createNews = async (req, res) => {
                 message: "All fields are required"
             });
         }
-        // Image harus berupa array sesuai model
-        const news = new News({
+        const newNews = await News.create({
             title,
             content,
             image: [image],
             date,
             category
         });
-        const newNews = await news.save();
         
         // Log activity
         if (req.user) {
@@ -115,8 +112,8 @@ export const updateNews = async (req, res) => {
     // Cloudinary returns full URL in req.file.path
     const newImage = req.file ? req.file.path : null;
     try {
-        const { id } = req.params;
-        if (!mongoose.Types.ObjectId.isValid(id)) {
+        const id = parseId(req.params.id);
+        if (!id) {
             if (newImage) {
                 const publicId = getPublicIdFromUrl(newImage);
                 await deleteFromCloudinary(publicId);
@@ -126,7 +123,7 @@ export const updateNews = async (req, res) => {
                 message: "News not found"
             });
         }
-        const news = await News.findById(id);
+        const news = await News.getById(id);
         if (!news) {
             if (newImage) {
                 const publicId = getPublicIdFromUrl(newImage);
@@ -139,11 +136,10 @@ export const updateNews = async (req, res) => {
         }
 
         const oldImages = news.image;
-        if (newImage) {
-            news.image = [newImage];
-        }
-        Object.assign(news, req.body);
-        await news.save();
+        const updatedNews = await News.update(id, {
+            ...req.body,
+            ...(newImage ? { image: [newImage] } : {})
+        });
 
         // Delete old images from Cloudinary after successful update
         if (newImage && oldImages && oldImages.length > 0) {
@@ -158,8 +154,8 @@ export const updateNews = async (req, res) => {
             await createActivityLog({
                 action: 'update',
                 resource: 'news',
-                resourceName: news.title,
-                resourceId: news._id,
+                resourceName: updatedNews.title,
+                resourceId: updatedNews._id,
                 userId: req.user.id,
                 userName: req.user.name || 'Admin'
             });
@@ -167,7 +163,7 @@ export const updateNews = async (req, res) => {
 
         res.status(200).json({
             success: true,
-            data: news
+            data: updatedNews
         });
     } catch (error) {
         // Delete new image on error
@@ -185,14 +181,14 @@ export const updateNews = async (req, res) => {
 // Delete news
 export const deleteNews = async (req, res) => {
     try {
-        const { id } = req.params;
-        if (!mongoose.Types.ObjectId.isValid(id)) {
+        const id = parseId(req.params.id);
+        if (!id) {
             return res.status(404).json({
                 success: false,
                 message: "News not found"
             });
         }
-        const news = await News.findByIdAndDelete(id);
+        const news = await News.deleteById(id);
         if (!news) {
             return res.status(404).json({
                 success: false,

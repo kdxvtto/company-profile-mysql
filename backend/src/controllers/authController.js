@@ -3,11 +3,23 @@ import bcrypt from "bcryptjs";
 import User from "../models/User.js";
 import { blacklistToken } from "../utils/blacklistToken.js";
 import { generateAccessToken, generateRefreshToken } from "../utils/generateToken.js";
+import { parseId } from "../utils/parseId.js";
+
+const getRefreshCookieOptions = () => ({
+  httpOnly: true,
+  secure: process.env.NODE_ENV === "production",
+  sameSite: "strict",
+});
+
+const getRefreshCookieOptionsWithMaxAge = () => ({
+  ...getRefreshCookieOptions(),
+  maxAge: 7 * 24 * 60 * 60 * 1000,
+});
 
 export const register = async (req, res) => {
   try {
     const { name, email, password } = req.body;
-    const existingUser = await User.findOne({ email });
+    const existingUser = await User.findByEmail(email);
 
     if (!name || !email || !password) {
       return res.status(400).json({
@@ -23,16 +35,19 @@ export const register = async (req, res) => {
       });
     }
 
-    const user = new User({ name, email, password });
-    const newUser = await user.save();
-    const safeUser = newUser.toObject();
-    delete safeUser.password;
+    const newUser = await User.create({ name, email, password });
 
     return res.status(201).json({
       success: true,
-      data: safeUser,
+      data: newUser,
     });
   } catch (error) {
+    if (error?.code === "ER_DUP_ENTRY") {
+      return res.status(400).json({
+        success: false,
+        message: "User already exists",
+      });
+    }
     return res.status(500).json({
       success: false,
       message: error.message,
@@ -44,11 +59,13 @@ export const login = async (req, res) => {
   try {
     const { email, password } = req.body;
     const jwtSecret = process.env.JWT_SECRET;
+    const refreshSecret = process.env.JWT_REFRESH_SECRET;
 
-    if (!jwtSecret) {
+    if (!jwtSecret || !refreshSecret) {
       return res.status(500).json({
         success: false,
-        message: "JWT secret is not set (JWT_SECRET env missing)",
+        message:
+          "JWT secrets are not set (JWT_SECRET / JWT_REFRESH_SECRET env missing)",
       });
     }
 
@@ -59,7 +76,7 @@ export const login = async (req, res) => {
       });
     }
 
-    const user = await User.findOne({ email });
+    const user = await User.findByEmail(email);
     if (!user) {
       return res.status(401).json({
         success: false,
@@ -74,27 +91,29 @@ export const login = async (req, res) => {
         message: "Invalid credentials",
       });
     }
-    const payload = { id: user._id, name: user.name, email: user.email };
+    const payload = {
+      id: user._id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+    };
     const token = generateAccessToken(payload);
     const refreshToken = generateRefreshToken(payload);
-    user.refreshToken = refreshToken;
-    await user.save();
+    await User.updateRefreshToken(user._id, refreshToken);
 
-    res.cookie("refreshToken", refreshToken, {
-      httpOnly: true,
-      secure: true,
-      sameSite: "strict",
-      maxAge: 7 * 24 * 60 * 60 * 1000,
-    });
-
-    const safeUser = user.toObject();
-    delete safeUser.password;
+    res.cookie("refreshToken", refreshToken, getRefreshCookieOptionsWithMaxAge());
 
     return res.status(200).json({
       success: true,
-      data: safeUser,
+      data: {
+        _id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        createdAt: user.createdAt,
+        updatedAt: user.updatedAt,
+      },
       token,
-      refreshToken,
     });
   } catch (error) {
     return res.status(500).json({
@@ -118,9 +137,9 @@ export const logout = async (req, res) => {
     blacklistToken(token);
     const refreshToken = req.cookies.refreshToken;
     if (refreshToken) {
-      await User.updateOne({ refreshToken }, { refreshToken: null });
+      await User.clearRefreshTokenByToken(refreshToken);
     }
-    res.clearCookie("refreshToken");
+    res.clearCookie("refreshToken", getRefreshCookieOptions());
 
     return res.status(200).json({
       success: true,
@@ -136,7 +155,15 @@ export const logout = async (req, res) => {
 
 export const getProfile = async (req, res) => {
   try {
-    const user = await User.findById(req.user.id).select('-password');
+    const userId = parseId(req.user?.id);
+    if (!userId) {
+      return res.status(401).json({
+        success: false,
+        message: "Unauthorized",
+      });
+    }
+
+    const user = await User.getById(userId);
     if (!user) {
       return res.status(404).json({
         success: false,
@@ -158,12 +185,18 @@ export const getProfile = async (req, res) => {
 export const updateProfile = async (req, res) => {
   try {
     const { name, email } = req.body;
-    const userId = req.user.id;
+    const userId = parseId(req.user?.id);
+    if (!userId) {
+      return res.status(401).json({
+        success: false,
+        message: "Unauthorized",
+      });
+    }
 
     // Check if email is being changed and if it's already taken
     if (email) {
-      const existingUser = await User.findOne({ email, _id: { $ne: userId } });
-      if (existingUser) {
+      const existingUser = await User.findByEmail(email);
+      if (existingUser && existingUser._id !== userId) {
         return res.status(400).json({
           success: false,
           message: "Email already in use",
@@ -171,11 +204,13 @@ export const updateProfile = async (req, res) => {
       }
     }
 
-    const updatedUser = await User.findByIdAndUpdate(
-      userId,
-      { name, email },
-      { new: true }
-    ).select('-password');
+    const updatedUser = await User.update(userId, { name, email });
+    if (!updatedUser) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
 
     return res.status(200).json({
       success: true,
@@ -192,7 +227,13 @@ export const updateProfile = async (req, res) => {
 export const changePassword = async (req, res) => {
   try {
     const { currentPassword, newPassword } = req.body;
-    const userId = req.user.id;
+    const userId = parseId(req.user?.id);
+    if (!userId) {
+      return res.status(401).json({
+        success: false,
+        message: "Unauthorized",
+      });
+    }
 
     if (!currentPassword || !newPassword) {
       return res.status(400).json({
@@ -201,7 +242,14 @@ export const changePassword = async (req, res) => {
       });
     }
 
-    const user = await User.findById(userId);
+    if (typeof newPassword !== "string" || newPassword.length < 6) {
+      return res.status(422).json({
+        success: false,
+        message: "Password minimal 6 karakter",
+      });
+    }
+
+    const user = await User.getByIdWithPassword(userId);
     if (!user) {
       return res.status(404).json({
         success: false,
@@ -217,9 +265,7 @@ export const changePassword = async (req, res) => {
       });
     }
 
-    const hashedPassword = await bcrypt.hash(newPassword, 10);
-    user.password = hashedPassword;
-    await user.save();
+    await User.update(userId, { password: newPassword });
 
     return res.status(200).json({
       success: true,
