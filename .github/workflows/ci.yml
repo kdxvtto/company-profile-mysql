@@ -32,10 +32,18 @@ jobs:
     runs-on: ubuntu-latest
 
     services:
-      mongodb:
-        image: mongo:latest
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: testpassword
+          MYSQL_DATABASE: company_test
         ports:
-          - 27017:27017
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h localhost"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
 
     steps:
       - uses: actions/checkout@v4
@@ -46,6 +54,16 @@ jobs:
           cache: npm
           cache-dependency-path: backend/package-lock.json
 
+      - name: Wait for MySQL and create tables
+        run: |
+          until mysqladmin ping -h 127.0.0.1 --silent; do
+            echo "Waiting for MySQL..."
+            sleep 2
+          done
+          mysql -h 127.0.0.1 -u root -ptestpassword company_test < backend/src/sql/userTable.sql
+        env:
+          MYSQL_PWD: testpassword
+
       - name: Install Backend dependencies
         run: npm ci
         working-directory: backend
@@ -54,7 +72,11 @@ jobs:
         run: npm test
         working-directory: backend
         env:
-          MONGOURI: mongodb://localhost:27017/test
+          DB_HOST: 127.0.0.1
+          DB_USER: root
+          DB_PASSWORD: testpassword
+          DB_NAME: company_test
+          DB_PORT: 3306
           JWT_SECRET: test
           JWT_REFRESH_SECRET: test-refresh
           SALT_ROUND: 10
