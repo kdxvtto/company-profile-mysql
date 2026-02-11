@@ -20,16 +20,12 @@
 
 import request from "supertest";
 import app from "../app.js";
-import mongoose from "mongoose";
+
+// User model - untuk create/delete user di database (MySQL)
 import User from "../models/User.js";
-import dotenv from "dotenv";
-import path from "path";
-import { fileURLToPath } from "url";
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-dotenv.config({ path: path.resolve(__dirname, "../../.env.local") });
-
-const MONGOURI = process.env.MONGOURI || "mongodb://127.0.0.1:27017/company_test";
+// MySQL pool - untuk cleanup dan close connection
+import pool from "../config/database.js";
 
 // ============ TEST SUITE ============
 
@@ -40,16 +36,13 @@ describe("User Profile API", () => {
      */
     let token = null;
 
-    // Connect ke database sekali di awal
-    beforeAll(async () => {
-        if (mongoose.connection.readyState === 0) {
-            await mongoose.connect(MONGOURI);
-        }
-    });
-
-    // Tutup koneksi di akhir
+    /**
+     * afterAll() - Dijalankan SEKALI setelah semua test selesai
+     * Tutup koneksi MySQL supaya Jest bisa exit
+     */
     afterAll(async () => {
-        await mongoose.connection.close();
+        await User.deleteByEmail("test@mail.com");
+        await pool.end();
     });
 
     /**
@@ -64,10 +57,10 @@ describe("User Profile API", () => {
      */
     beforeEach(async () => {
         // STEP 1: Cleanup - hapus user lama
-        await User.deleteMany({ email: "test@mail.com" });
+        await User.deleteByEmail("test@mail.com");
 
         // STEP 2: Buat user baru
-        // Password akan di-hash otomatis oleh model
+        // Password akan di-hash otomatis oleh User.create()
         await User.create({
             name: "Kevin Test",
             email: "test@mail.com",
@@ -88,7 +81,7 @@ describe("User Profile API", () => {
 
     // Cleanup setelah setiap test
     afterEach(async () => {
-        await User.deleteMany({ email: "test@mail.com" });
+        await User.deleteByEmail("test@mail.com");
     });
 
     // ============ TEST CASES ============
@@ -133,30 +126,6 @@ describe("User Profile API", () => {
         // Tanpa token = Unauthorized
         expect(res.statusCode).toBe(401);
     });
-
-    /**
-     * TEST TAMBAHAN YANG BISA DIBUAT:
-     * 
-     * 1. Test dengan token invalid/expired
-     *    it("should fail with invalid token", async () => {
-     *        const res = await request(app)
-     *            .get("/api/freyabpr/profile")
-     *            .set("Authorization", "Bearer invalid_token_here");
-     *        expect(res.statusCode).toBe(401);
-     *    });
-     * 
-     * 2. Test update profile
-     *    it("should update profile", async () => {
-     *        const res = await request(app)
-     *            .put("/api/freyabpr/profile")
-     *            .set("Authorization", `Bearer ${token}`)
-     *            .send({ name: "New Name" });
-     *        expect(res.statusCode).toBe(200);
-     *    });
-     * 
-     * 3. Test change password
-     *    it("should change password", async () => { ... });
-     */
 });
 
 /**

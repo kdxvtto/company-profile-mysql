@@ -27,27 +27,11 @@ import request from "supertest";
 // Import Express app (BUKAN server.js karena kita tidak mau start server)
 import app from "../app.js";
 
-// Mongoose - untuk connect dan manipulasi MongoDB
-import mongoose from "mongoose";
-
-// User model - untuk create/delete user di database
+// User model - untuk create/delete user di database (MySQL)
 import User from "../models/User.js";
 
-// Dotenv - untuk load environment variables (.env file)
-import dotenv from "dotenv";
-import path from "path";
-import { fileURLToPath } from "url";
-
-// ============ SETUP ============
-
-// __dirname tidak ada di ES Modules, jadi harus dibuat manual
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-
-// Load .env.local file untuk mendapat MONGOURI, JWT_SECRET, dll
-dotenv.config({ path: path.resolve(__dirname, "../../.env.local") });
-
-// MongoDB URI - pakai dari .env atau fallback ke local
-const MONGOURI = process.env.MONGOURI || "mongodb://127.0.0.1:27017/company_test";
+// MySQL pool - untuk cleanup dan close connection
+import pool from "../config/database.js";
 
 // ============ TEST SUITE ============
 
@@ -58,24 +42,12 @@ const MONGOURI = process.env.MONGOURI || "mongodb://127.0.0.1:27017/company_test
 describe("Auth API", () => {
 
     /**
-     * beforeAll() - Dijalankan SEKALI sebelum semua test dimulai
-     * Gunakan untuk setup yang mahal (seperti koneksi database)
-     */
-    beforeAll(async () => {
-        // Cek apakah sudah terkoneksi ke MongoDB
-        // readyState: 0 = disconnected, 1 = connected
-        if (mongoose.connection.readyState === 0) {
-            await mongoose.connect(MONGOURI);
-        }
-    });
-
-    /**
      * afterAll() - Dijalankan SEKALI setelah semua test selesai
-     * Gunakan untuk cleanup (tutup koneksi, hapus temp files, dll)
+     * Tutup koneksi MySQL supaya Jest bisa exit
      */
     afterAll(async () => {
-        // Tutup koneksi MongoDB supaya Jest bisa exit
-        await mongoose.connection.close();
+        await User.deleteByEmail("test@mail.com");
+        await pool.end();
     });
 
     /**
@@ -84,7 +56,7 @@ describe("Auth API", () => {
      */
     beforeEach(async () => {
         // Hapus test user supaya setiap test mulai dengan kondisi bersih
-        await User.deleteMany({ email: "test@mail.com" });
+        await User.deleteByEmail("test@mail.com");
     });
 
     /**
@@ -93,7 +65,7 @@ describe("Auth API", () => {
      */
     afterEach(async () => {
         // Hapus test user untuk cleanup
-        await User.deleteMany({ email: "test@mail.com" });
+        await User.deleteByEmail("test@mail.com");
     });
 
     // ============ TEST CASES ============
@@ -109,13 +81,12 @@ describe("Auth API", () => {
     it("should login successfully", async () => {
         // ARRANGE (Persiapan)
         // =====================
-        // Buat user di database
-        // PENTING: Jangan hash password manual!
-        // User model punya pre-save hook yang otomatis hash password
+        // Buat user di database via User model
+        // Password akan di-hash otomatis oleh User.create()
         await User.create({
             name: "Kevin Test",
             email: "test@mail.com",
-            password: "password123"  // Plain password - model akan hash
+            password: "password123"
         });
 
         // ACT (Aksi)

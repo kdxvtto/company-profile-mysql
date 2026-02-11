@@ -172,6 +172,14 @@ const User = {
     await pool.query(`DELETE FROM ${TABLE} WHERE id = ?`, [id]);
     return existing;
   },
+
+  async deleteByEmail(email) {
+    const [result] = await pool.query(
+      `DELETE FROM ${TABLE} WHERE email = ?`,
+      [normalizeEmail(email)],
+    );
+    return result.affectedRows;
+  },
 };
 
 export default User;
