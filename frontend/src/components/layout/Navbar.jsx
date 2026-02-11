@@ -128,6 +128,7 @@ const Navbar = () => {
             ],
         },
         { label: "Publikasi", href: "/publikasi" },
+        { label: "PPID", href: "/ppid" },
         { label: "Hubungi Kami", href: "/hubungi" },
     ];
 

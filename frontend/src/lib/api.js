@@ -223,4 +223,11 @@ export const activityAPI = {
     getAll: (params = {}) => api.get('/activity', { params }),
 };
 
+// ========================
+// PPID API
+// ========================
+export const ppidAPI = {
+    submit: (data) => api.post('/ppid/submit', data),
+};
+
 export default api;

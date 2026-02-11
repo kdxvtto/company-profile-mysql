@@ -22,6 +22,7 @@ import searchRoutes from "./routes/searchRouter.js";
 import publicationRoutes from "./routes/publicationRouter.js";
 import galleryRoutes from "./routes/galleryRouter.js";  
 import activityRoutes from "./routes/activityRouter.js";
+import ppidRoutes from "./routes/ppidRouter.js";
 import { errorHandler, notFoundHandler } from "./middlewares/errorHandler.js";
 import swaggerDocs from "./document/swagger.js";
 
@@ -64,6 +65,7 @@ app.use("/api/search", searchRoutes);
 app.use("/api/publications", publicationRoutes);
 app.use("/api/gallery", galleryRoutes);
 app.use("/api/activity", activityRoutes);
+app.use("/api/ppid", ppidRoutes);
 
 // Health check endpoint
 app.get("/health", (req, res) => {

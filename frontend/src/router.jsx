@@ -23,6 +23,7 @@ const PublikasiPage = lazy(() => import('./pages/PublikasiPage'));
 const HubungiKamiPage = lazy(() => import('./pages/HubungiKamiPage'));
 const TermsPage = lazy(() => import('./pages/TermsPage'));
 const PrivacyPage = lazy(() => import('./pages/PrivacyPage'));
+const PPIDPage = lazy(() => import('./pages/PPIDPage'));
 
 // Lazy load auth pages
 const LoginPage = lazy(() => import('./pages/auth/LoginPage'));
@@ -125,6 +126,10 @@ const router = createBrowserRouter([
     {
         path: '/privacy',
         element: <LazyWrapper><PrivacyPage /></LazyWrapper>,
+    },
+    {
+        path: '/ppid',
+        element: <LazyWrapper><PPIDPage /></LazyWrapper>,
     },
     // Auth routes (hidden path)
     {
