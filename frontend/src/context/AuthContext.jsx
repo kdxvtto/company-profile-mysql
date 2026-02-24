@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useEffect } from 'react';
-import { authAPI } from '@/lib/api';
+import { authAPI, setAccessToken, clearAccessToken } from '@/lib/api';
 
 const AuthContext = createContext(null);
 
@@ -20,40 +20,44 @@ export const AuthProvider = ({ children }) => {
     }, []);
 
     const checkAuth = async () => {
-        const token = localStorage.getItem('token');
-        console.log('[AuthContext] Checking auth, token exists:', !!token);
-        
-        if (token) {
-            try {
-                const response = await authAPI.getProfile();
-                console.log('[AuthContext] Profile fetched:', response.data);
-                setUser(response.data.data);
-            } catch (error) {
-                console.error('[AuthContext] Profile fetch failed:', error);
-                localStorage.removeItem('token');
+        try {
+            const refreshResponse = await authAPI.refreshToken();
+            const newToken = refreshResponse.data?.data?.accessToken;
+            if (newToken) {
+                setAccessToken(newToken);
+                const profileResponse = await authAPI.getProfile();
+                setUser(profileResponse.data.data);
+            } else {
+                clearAccessToken();
                 setUser(null);
             }
+        } catch (error) {
+            clearAccessToken();
+            setUser(null);
+        } finally {
+            setLoading(false);
         }
-        setLoading(false);
     };
 
     const login = async (email, password) => {
-        console.log('[AuthContext] Logging in...');
         const response = await authAPI.login({ email, password });
-        console.log('[AuthContext] Login response:', response.data);
         
         const { token, data } = response.data; // Check response structure carefully
         // Note: backend response usually has 'data' property for user object
         
-        localStorage.setItem('token', token);
+        setAccessToken(token);
         // Important: Set user immediately to avoid race condition
         setUser(data || response.data.user); 
         return response;
     };
 
-    const logout = () => {
-        localStorage.removeItem('token');
-        setUser(null);
+    const logout = async () => {
+        try {
+            await authAPI.logout();
+        } finally {
+            clearAccessToken();
+            setUser(null);
+        }
     };
 
     const value = {

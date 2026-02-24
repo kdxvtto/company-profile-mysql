@@ -4,6 +4,7 @@ import { createGallery, deleteGallery, getGallery, updateGallery } from "../cont
 import { validate } from "../middlewares/validate.js";
 import { uploadGallery } from "../config/cloudinary.js";
 import verifyToken from "../middlewares/verifyToken.js";
+import { checkRole } from "../middlewares/checkRole.js";
 
 const router = express.Router();
 /**
@@ -94,9 +95,9 @@ const router = express.Router();
  *         description: Internal Server Error
  */
 
-router.post("/", verifyToken, uploadGallery.single("image"), validate(createGallerySchema), createGallery);
+router.post("/", verifyToken, checkRole(["admin", "staff"]), uploadGallery.single("image"), validate(createGallerySchema), createGallery);
 router.get("/", getGallery);
-router.put("/:id", verifyToken, uploadGallery.single("image"), validate(updateGallerySchema), updateGallery);
-router.delete("/:id", verifyToken, deleteGallery);
+router.put("/:id", verifyToken, checkRole(["admin", "staff"]), uploadGallery.single("image"), validate(updateGallerySchema), updateGallery);
+router.delete("/:id", verifyToken, checkRole(["admin", "staff"]), deleteGallery);
 
 export default router;  

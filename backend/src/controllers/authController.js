@@ -4,6 +4,7 @@ import User from "../models/User.js";
 import { blacklistToken } from "../utils/blacklistToken.js";
 import { generateAccessToken, generateRefreshToken } from "../utils/generateToken.js";
 import { parseId } from "../utils/parseId.js";
+import { hashToken } from "../utils/hashToken.js";
 
 const getRefreshCookieOptions = () => ({
   httpOnly: true,
@@ -19,7 +20,31 @@ const getRefreshCookieOptionsWithMaxAge = () => ({
 export const register = async (req, res) => {
   try {
     const { name, email, password } = req.body;
-    const existingUser = await User.findByEmail(email);
+    const adminCount = await User.countByRole("admin");
+    const bootstrapToken = process.env.ADMIN_BOOTSTRAP_TOKEN;
+    const rawToken = req.headers["x-bootstrap-token"];
+    const providedToken = Array.isArray(rawToken) ? rawToken[0] : rawToken;
+
+    if (adminCount > 0) {
+      return res.status(403).json({
+        success: false,
+        message: "Registration is disabled",
+      });
+    }
+
+    if (!bootstrapToken) {
+      return res.status(500).json({
+        success: false,
+        message: "ADMIN_BOOTSTRAP_TOKEN env is missing",
+      });
+    }
+
+    if (!providedToken || providedToken !== bootstrapToken) {
+      return res.status(403).json({
+        success: false,
+        message: "Invalid bootstrap token",
+      });
+    }
 
     if (!name || !email || !password) {
       return res.status(400).json({
@@ -28,6 +53,7 @@ export const register = async (req, res) => {
       });
     }
 
+    const existingUser = await User.findByEmail(email);
     if (existingUser) {
       return res.status(400).json({
         success: false,
@@ -35,7 +61,7 @@ export const register = async (req, res) => {
       });
     }
 
-    const newUser = await User.create({ name, email, password });
+    const newUser = await User.create({ name, email, password, role: "admin" });
 
     return res.status(201).json({
       success: true,
@@ -99,7 +125,9 @@ export const login = async (req, res) => {
     };
     const token = generateAccessToken(payload);
     const refreshToken = generateRefreshToken(payload);
-    await User.updateRefreshToken(user._id, refreshToken);
+    const refreshTokenHash = hashToken(refreshToken);
+    await User.updateRefreshTokenHash(user._id, refreshTokenHash);
+    await User.setLastLoginAt(user._id);
 
     res.cookie("refreshToken", refreshToken, getRefreshCookieOptionsWithMaxAge());
 
@@ -126,6 +154,7 @@ export const login = async (req, res) => {
 export const logout = async (req, res) => {
   try {
     const token = req.headers.authorization?.split(" ")[1];
+    const userId = parseId(req.user?.id);
 
     if (!token) {
       return res.status(400).json({
@@ -135,9 +164,9 @@ export const logout = async (req, res) => {
     }
 
     blacklistToken(token);
-    const refreshToken = req.cookies.refreshToken;
-    if (refreshToken) {
-      await User.clearRefreshTokenByToken(refreshToken);
+    if (userId) {
+      await User.clearRefreshTokenHashById(userId);
+      await User.setLastLogoutAt(userId);
     }
     res.clearCookie("refreshToken", getRefreshCookieOptions());
 
@@ -266,6 +295,7 @@ export const changePassword = async (req, res) => {
     }
 
     await User.update(userId, { password: newPassword });
+    await User.setLastLogoutAt(userId);
 
     return res.status(200).json({
       success: true,

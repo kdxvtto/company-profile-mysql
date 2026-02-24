@@ -9,6 +9,25 @@ cloudinary.config({
     api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
+const imageMimeTypes = new Set([
+    "image/jpeg",
+    "image/png",
+    "image/webp",
+]);
+const pdfMimeTypes = new Set([
+    "application/pdf",
+    "application/x-pdf",
+]);
+
+const makeFileFilter = (allowedMimeTypes, label) => (req, file, cb) => {
+    if (!allowedMimeTypes.has(file.mimetype)) {
+        const error = new Error(`Invalid ${label} file type`);
+        error.status = 400;
+        return cb(error, false);
+    }
+    return cb(null, true);
+};
+
 // Storage for team profile images
 const teamStorage = new CloudinaryStorage({
     cloudinary: cloudinary,
@@ -62,23 +81,28 @@ const galleryStorage = new CloudinaryStorage({
 // Create multer instances with file size limits
 export const uploadTeam = multer({ 
     storage: teamStorage,
+    fileFilter: makeFileFilter(imageMimeTypes, "image"),
     limits: { fileSize: 5 * 1024 * 1024 } // 5MB max for images
 });
 export const uploadNews = multer({ 
     storage: newsStorage,
+    fileFilter: makeFileFilter(imageMimeTypes, "image"),
     limits: { fileSize: 5 * 1024 * 1024 } // 5MB max for images
 });
 export const uploadService = multer({ 
     storage: serviceStorage,
+    fileFilter: makeFileFilter(imageMimeTypes, "image"),
     limits: { fileSize: 5 * 1024 * 1024 } // 5MB max for images
 });
 export const uploadPublication = multer({ 
     storage: publicationStorage,
+    fileFilter: makeFileFilter(pdfMimeTypes, "document"),
     limits: { fileSize: 10 * 1024 * 1024 } // 10MB max for PDFs
 });
 
 export const uploadGallery = multer({ 
     storage: galleryStorage,
+    fileFilter: makeFileFilter(imageMimeTypes, "image"),
     limits: { fileSize: 10 * 1024 * 1024 } // 10MB max for images
 });
 

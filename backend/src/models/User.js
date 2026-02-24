@@ -7,12 +7,14 @@ const UPDATABLE_FIELDS = new Set([
   "email",
   "role",
   "password",
-  "refreshToken",
 ]);
 
 const SAFE_SELECT = "id AS _id, name, email, role, createdAt, updatedAt";
 const INTERNAL_SELECT =
-  "id AS _id, name, email, role, password, refreshToken, createdAt, updatedAt";
+  "id AS _id, name, email, role, password, refreshTokenHash, lastLogoutAt, lastLoginAt, lastRefreshAt, createdAt, updatedAt";
+const AUTH_SELECT =
+  "id AS _id, name, email, role, refreshTokenHash, lastLogoutAt, lastLoginAt, lastRefreshAt, createdAt, updatedAt";
+const AUTH_VERIFY_SELECT = "id AS _id, role, lastLogoutAt";
 
 const normalizeEmail = (email) =>
   typeof email === "string" ? email.trim().toLowerCase() : email;
@@ -22,7 +24,7 @@ const normalizeRole = (role) =>
 
 const validateRole = (role) => {
   const normalized = normalizeRole(role);
-  if (!normalized) return "admin";
+  if (!normalized) return "staff";
   if (normalized !== "admin" && normalized !== "staff") {
     throw new Error("Role tidak valid");
   }
@@ -74,10 +76,18 @@ const User = {
     return rows[0] ?? null;
   },
 
-  async findByRefreshToken(refreshToken) {
+  async getByIdWithRefreshTokenHash(id) {
     const [rows] = await pool.query(
-      `SELECT ${SAFE_SELECT} FROM ${TABLE} WHERE refreshToken = ?`,
-      [refreshToken],
+      `SELECT ${AUTH_SELECT} FROM ${TABLE} WHERE id = ?`,
+      [id],
+    );
+    return rows[0] ?? null;
+  },
+
+  async getByIdForAuth(id) {
+    const [rows] = await pool.query(
+      `SELECT ${AUTH_VERIFY_SELECT} FROM ${TABLE} WHERE id = ?`,
+      [id],
     );
     return rows[0] ?? null;
   },
@@ -92,11 +102,9 @@ const User = {
     }
 
     const hashedPassword = await hashPassword(password);
-    const refreshToken = data.refreshToken ?? null;
-
     const [result] = await pool.query(
-      `INSERT INTO ${TABLE} (name, email, role, password, refreshToken) VALUES (?, ?, ?, ?, ?)`,
-      [name, email, role, hashedPassword, refreshToken],
+      `INSERT INTO ${TABLE} (name, email, role, password) VALUES (?, ?, ?, ?)`,
+      [name, email, role, hashedPassword],
     );
 
     return this.getById(result.insertId);
@@ -144,24 +152,58 @@ const User = {
     return this.getById(id);
   },
 
-  async updateRefreshToken(id, refreshToken) {
+  async updateRefreshTokenHash(id, refreshTokenHash) {
     const [result] = await pool.query(
-      `UPDATE ${TABLE} SET refreshToken = ? WHERE id = ?`,
-      [refreshToken, id],
+      `UPDATE ${TABLE} SET refreshTokenHash = ? WHERE id = ?`,
+      [refreshTokenHash, id],
     );
     return result.affectedRows;
   },
 
-  async clearRefreshTokenByToken(refreshToken) {
+  async clearRefreshTokenHashById(id) {
     const [result] = await pool.query(
-      `UPDATE ${TABLE} SET refreshToken = NULL WHERE refreshToken = ?`,
-      [refreshToken],
+      `UPDATE ${TABLE} SET refreshTokenHash = NULL WHERE id = ?`,
+      [id],
+    );
+    return result.affectedRows;
+  },
+
+  async setLastLogoutAt(id, lastLogoutAt = new Date()) {
+    const [result] = await pool.query(
+      `UPDATE ${TABLE} SET lastLogoutAt = ? WHERE id = ?`,
+      [lastLogoutAt, id],
+    );
+    return result.affectedRows;
+  },
+
+  async setLastLoginAt(id, lastLoginAt = new Date()) {
+    const [result] = await pool.query(
+      `UPDATE ${TABLE} SET lastLoginAt = ? WHERE id = ?`,
+      [lastLoginAt, id],
+    );
+    return result.affectedRows;
+  },
+
+  async setLastRefreshAt(id, lastRefreshAt = new Date()) {
+    const [result] = await pool.query(
+      `UPDATE ${TABLE} SET lastRefreshAt = ? WHERE id = ?`,
+      [lastRefreshAt, id],
     );
     return result.affectedRows;
   },
 
   async count() {
     const [rows] = await pool.query(`SELECT COUNT(*) as total FROM ${TABLE}`);
+    return rows[0]?.total ?? 0;
+  },
+
+  async countByRole(role) {
+    const normalized = normalizeRole(role);
+    if (!normalized) return 0;
+    const [rows] = await pool.query(
+      `SELECT COUNT(*) as total FROM ${TABLE} WHERE role = ?`,
+      [normalized],
+    );
     return rows[0]?.total ?? 0;
   },
 

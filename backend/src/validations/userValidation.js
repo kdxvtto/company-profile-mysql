@@ -14,6 +14,6 @@ const userSchema = z.object({
 });
 
 export const createUserSchema = userSchema.extend({
-  role: roleSchema.default("admin"),
+  role: roleSchema.default("staff"),
 });
 export const updateUserSchema = userSchema.partial();

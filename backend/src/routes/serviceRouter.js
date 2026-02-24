@@ -4,6 +4,7 @@ import { validate } from "../middlewares/validate.js";
 import { createServicesSchema, updateServicesSchema } from "../validations/serviceValidation.js";
 import verifyToken from "../middlewares/verifyToken.js";
 import { uploadService } from "../config/cloudinary.js";
+import { checkRole } from "../middlewares/checkRole.js";
 
 const router = express.Router();
 
@@ -116,8 +117,8 @@ const router = express.Router();
 
 router.get("/", getAllServices);
 router.get("/:id", getServiceById);
-router.post("/", verifyToken, uploadService.single("image"), validate(createServicesSchema), createService);
-router.put("/:id", verifyToken, uploadService.single("image"), validate(updateServicesSchema), updateService);
-router.delete("/:id", verifyToken, deleteService);
+router.post("/", verifyToken, checkRole(["admin", "staff"]), uploadService.single("image"), validate(createServicesSchema), createService);
+router.put("/:id", verifyToken, checkRole(["admin", "staff"]), uploadService.single("image"), validate(updateServicesSchema), updateService);
+router.delete("/:id", verifyToken, checkRole(["admin", "staff"]), deleteService);
 
 export default router;

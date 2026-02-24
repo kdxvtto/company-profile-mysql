@@ -19,16 +19,9 @@ export const corsMiddleware = cors({
     if (allowedOrigins.includes(origin)) {
       return callback(null, true);
     }
-    
-    // Allow all Vercel preview deployments
-    if (origin.includes('.vercel.app')) {
-      return callback(null, true);
-    }
-    
     return callback(new Error("Not allowed by CORS"), false);
   },
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization"],
   credentials: true,
 });
-

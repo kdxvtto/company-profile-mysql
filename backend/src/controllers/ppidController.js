@@ -1,11 +1,28 @@
 import nodemailer from "nodemailer";
 
+const escapeHtml = (value) =>
+    String(value ?? "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#39;");
+
+const sanitizeSubject = (value) =>
+    String(value ?? "").replace(/[\r\n]+/g, " ").trim();
+
 /**
  * Kirim permohonan informasi PPID via email
  */
 const submitPPID = async (req, res) => {
     try {
         const { nama, nomorIdentitas, informasiDiminta, tujuan, kontak } = req.body;
+        const safeNama = escapeHtml(nama);
+        const safeNomorIdentitas = escapeHtml(nomorIdentitas);
+        const safeInformasiDiminta = escapeHtml(informasiDiminta);
+        const safeTujuan = escapeHtml(tujuan);
+        const safeKontak = escapeHtml(kontak);
+        const subjectNama = sanitizeSubject(nama);
 
         // Buat transporter nodemailer
         const transporter = nodemailer.createTransport({
@@ -22,7 +39,7 @@ const submitPPID = async (req, res) => {
         await transporter.sendMail({
             from: `"PPID Bank Wonogiri" <${process.env.SMTP_USER}>`,
             to: process.env.PPID_EMAIL || "info@bankwonogiri.co.id",
-            subject: `[PPID] Permohonan Informasi - ${nama}`,
+            subject: `[PPID] Permohonan Informasi - ${subjectNama}`,
             html: `
                 <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
                     <div style="background: #e11d48; color: white; padding: 20px; border-radius: 8px 8px 0 0;">
@@ -32,23 +49,23 @@ const submitPPID = async (req, res) => {
                         <table style="width: 100%; border-collapse: collapse;">
                             <tr>
                                 <td style="padding: 10px 0; border-bottom: 1px solid #f3f4f6; font-weight: bold; width: 40%; color: #374151;">Nama Pemohon</td>
-                                <td style="padding: 10px 0; border-bottom: 1px solid #f3f4f6; color: #4b5563;">${nama}</td>
+                                <td style="padding: 10px 0; border-bottom: 1px solid #f3f4f6; color: #4b5563;">${safeNama}</td>
                             </tr>
                             <tr>
                                 <td style="padding: 10px 0; border-bottom: 1px solid #f3f4f6; font-weight: bold; color: #374151;">Nomor Identitas</td>
-                                <td style="padding: 10px 0; border-bottom: 1px solid #f3f4f6; color: #4b5563;">${nomorIdentitas}</td>
+                                <td style="padding: 10px 0; border-bottom: 1px solid #f3f4f6; color: #4b5563;">${safeNomorIdentitas}</td>
                             </tr>
                             <tr>
                                 <td style="padding: 10px 0; border-bottom: 1px solid #f3f4f6; font-weight: bold; color: #374151;">Informasi yang Diminta</td>
-                                <td style="padding: 10px 0; border-bottom: 1px solid #f3f4f6; color: #4b5563;">${informasiDiminta}</td>
+                                <td style="padding: 10px 0; border-bottom: 1px solid #f3f4f6; color: #4b5563;">${safeInformasiDiminta}</td>
                             </tr>
                             <tr>
                                 <td style="padding: 10px 0; border-bottom: 1px solid #f3f4f6; font-weight: bold; color: #374151;">Tujuan Penggunaan</td>
-                                <td style="padding: 10px 0; border-bottom: 1px solid #f3f4f6; color: #4b5563;">${tujuan}</td>
+                                <td style="padding: 10px 0; border-bottom: 1px solid #f3f4f6; color: #4b5563;">${safeTujuan}</td>
                             </tr>
                             <tr>
                                 <td style="padding: 10px 0; font-weight: bold; color: #374151;">Kontak Pemohon</td>
-                                <td style="padding: 10px 0; color: #4b5563;">${kontak}</td>
+                                <td style="padding: 10px 0; color: #4b5563;">${safeKontak}</td>
                             </tr>
                         </table>
                         <div style="margin-top: 20px; padding: 16px; background: #fef2f2; border-radius: 8px; color: #991b1b; font-size: 14px;">

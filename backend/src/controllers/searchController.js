@@ -7,56 +7,31 @@ import Gallery from "../models/Gallery.js";
 // Search across news and services
 export const search = async (req, res) => {
     try {
-        const { q } = req.query;
-        
-        if (!q || q.trim() === '') {
+        const rawQuery = typeof req.query.q === "string" ? req.query.q.trim() : "";
+
+        if (!rawQuery) {
             return res.status(400).json({
                 success: false,
                 message: "Search query is required"
             });
         }
 
-        const searchRegex = new RegExp(q, 'i');
+        const query = rawQuery.slice(0, 100);
+        const limit = 5;
 
-        // Search in News
-        const newsResults = await News.find({
-            $or: [
-                { title: searchRegex },
-                { content: searchRegex }
-            ]
-        }).limit(5).select('_id title content category date createdAt');
-
-        // Search in Services
-        const servicesResults = await Services.find({
-            $or: [
-                { title: searchRegex },
-                { content: searchRegex }
-            ]
-        }).limit(5).select('_id title content category');
-
-        // Search in Publications
-        const publicationsResults = await Publications.find({
-            $or: [
-                { name: searchRegex },
-                { category: searchRegex }
-            ]
-        }).limit(5).select('_id name category file');
-
-        // Search in Team Profile
-        const teamProfilesResults = await TeamProfile.find({
-            $or: [
-                { name: searchRegex },
-                { position: searchRegex }
-            ]
-        }).limit(5).select('_id name position image');
-
-        // Search in Gallery
-        const galleryResults = await Gallery.find({
-            $or: [
-                { title: searchRegex },
-                { description: searchRegex }
-            ]
-        }).limit(5).select('_id title description image');
+        const [
+            newsResults,
+            servicesResults,
+            publicationsResults,
+            teamProfilesResults,
+            galleryResults,
+        ] = await Promise.all([
+            News.search(query, limit),
+            Services.search(query, limit),
+            Publications.search(query, limit),
+            TeamProfile.search(query, limit),
+            Gallery.search(query, limit),
+        ]);
 
         res.status(200).json({
             success: true,
@@ -65,8 +40,13 @@ export const search = async (req, res) => {
                 services: servicesResults,
                 publications: publicationsResults,
                 teamProfiles: teamProfilesResults,
-                gallery: galleryResults, 
-                totalResults: newsResults.length + servicesResults.length + publicationsResults.length + teamProfilesResults.length + galleryResults.length
+                gallery: galleryResults,
+                totalResults:
+                    newsResults.length +
+                    servicesResults.length +
+                    publicationsResults.length +
+                    teamProfilesResults.length +
+                    galleryResults.length
             }
         });
     } catch (error) {

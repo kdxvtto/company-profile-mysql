@@ -3,6 +3,22 @@ import axios from 'axios';
 // Untuk Vite, gunakan import.meta.env
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
 
+// Access token stored in memory (not localStorage)
+let accessToken = null;
+
+export const setAccessToken = (token) => {
+    accessToken = token || null;
+    if (accessToken) {
+        api.defaults.headers.common['Authorization'] = `Bearer ${accessToken}`;
+    } else {
+        delete api.defaults.headers.common['Authorization'];
+    }
+};
+
+export const clearAccessToken = () => {
+    setAccessToken(null);
+};
+
 // Flag to prevent multiple refresh attempts
 let isRefreshing = false;
 let failedQueue = [];
@@ -30,9 +46,8 @@ const api = axios.create({
 // Request interceptor - add auth token
 api.interceptors.request.use(
     (config) => {
-        const token = localStorage.getItem('token');
-        if (token) {
-            config.headers.Authorization = `Bearer ${token}`;
+        if (accessToken) {
+            config.headers.Authorization = `Bearer ${accessToken}`;
         }
         return config;
     },
@@ -80,10 +95,9 @@ api.interceptors.response.use(
                 );
 
                 const newToken = response.data.data.accessToken;
-                localStorage.setItem('token', newToken);
+                setAccessToken(newToken);
                 
                 // Update authorization header
-                api.defaults.headers.common['Authorization'] = `Bearer ${newToken}`;
                 originalRequest.headers.Authorization = `Bearer ${newToken}`;
 
                 processQueue(null, newToken);
@@ -93,7 +107,7 @@ api.interceptors.response.use(
                 processQueue(refreshError, null);
                 
                 // Refresh failed - clear token
-                localStorage.removeItem('token');
+                clearAccessToken();
                 
                 // Only redirect to login if on admin pages
                 if (window.location.pathname.startsWith('/admin')) {

@@ -28,8 +28,9 @@ import swaggerDocs from "./document/swagger.js";
 
 const app = express();
 
-// Trust proxy for Railway/Vercel/Render (behind reverse proxy)
-app.set('trust proxy', 1);
+if(process.env.TRUST_PROXY === "true") {
+    app.set("trust proxy", "loopback");
+}
 
 // Compression middleware for Gzip responses
 app.use(compression());

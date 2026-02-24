@@ -4,7 +4,7 @@ import { login, register, logout, getProfile, updateProfile, changePassword } fr
 import verifyToken from "../middlewares/verifyToken.js";
 import { validate } from "../middlewares/validate.js";
 import { loginSchema, registerSchema } from "../validations/authValidation.js";
-import { loginRateLimiter, registerRateLimiter } from "../middlewares/rateLimiter.js";
+import { loginRateLimiter, registerRateLimiter, changePasswordRateLimiter, refreshTokenRateLimiter } from "../middlewares/rateLimiter.js";
 import { refreshToken } from "../controllers/refreshToken.js";
 
 const router = express.Router();
@@ -30,10 +30,10 @@ const router = express.Router();
  *             schema:
  *               type: object
  *               properties:
- *                 accessToken:
+ *                 token:
  *                   type: string
- *                 refreshToken:
- *                   type: string
+ *                 data:
+ *                   type: object
  *       400:
  *         description: Bad Request
  *         content:
@@ -82,10 +82,8 @@ const router = express.Router();
  *             schema:
  *               type: object
  *               properties:
- *                 accessToken:
- *                   type: string
- *                 refreshToken:
- *                   type: string
+ *                 data:
+ *                   type: object
  *       400:
  *         description: Bad Request
  *         content:
@@ -347,7 +345,7 @@ router.post("/register", registerRateLimiter, validate(registerSchema), register
 router.post("/logout", verifyToken, logout);
 router.get("/profile", verifyToken, getProfile);
 router.put("/profile", verifyToken, updateProfile);
-router.post("/refresh-token", refreshToken);
-router.put("/change-password", verifyToken, changePassword);
+router.post("/refresh-token", refreshTokenRateLimiter, refreshToken);
+router.put("/change-password", changePasswordRateLimiter, verifyToken, changePassword);
 
 export default router;

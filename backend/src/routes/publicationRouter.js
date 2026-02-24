@@ -4,6 +4,7 @@ import { validate } from "../middlewares/validate.js";
 import { createPublicationSchema, updatePublicationSchema } from "../validations/publicationValidation.js";
 import verifyToken from "../middlewares/verifyToken.js";
 import { uploadPublication } from "../config/cloudinary.js";
+import { checkRole } from "../middlewares/checkRole.js";
 
 const router = express.Router();
 
@@ -116,9 +117,8 @@ const router = express.Router();
 
 router.get("/", getAllPublications);
 router.get("/:id", getPublicationById);
-router.post("/", verifyToken, uploadPublication.single("file"), validate(createPublicationSchema), createPublication);
-router.put("/:id", verifyToken, uploadPublication.single("file"), validate(updatePublicationSchema), updatePublication);
-router.delete("/:id", verifyToken, deletePublication);
+router.post("/", verifyToken, checkRole(["admin", "staff"]), uploadPublication.single("file"), validate(createPublicationSchema), createPublication);
+router.put("/:id", verifyToken, checkRole(["admin", "staff"]), uploadPublication.single("file"), validate(updatePublicationSchema), updatePublication);
+router.delete("/:id", verifyToken, checkRole(["admin", "staff"]), deletePublication);
 
 export default router;
-

@@ -103,6 +103,9 @@ export const updateUser = async (req,res) => {
                 message: "User not found" 
             });
         }
+        if (req.body.role || req.body.password) {
+            await User.setLastLogoutAt(id);
+        }
         res.status(200).json({
             success: true,
             data : user

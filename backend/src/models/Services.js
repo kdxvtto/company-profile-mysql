@@ -68,6 +68,23 @@ const Services = {
     const [rows] = await pool.query(`SELECT COUNT(*) as total FROM ${TABLE}`);
     return rows[0]?.total ?? 0;
   },
+
+  async search(q, limit = 5) {
+    const term = `%${q}%`;
+    const safeLimit = Number.isFinite(Number(limit))
+      ? Math.min(20, Math.max(1, Number(limit)))
+      : 5;
+
+    const [rows] = await pool.query(
+      `SELECT id AS _id, title, content, image, category, createdAt
+       FROM ${TABLE}
+       WHERE title LIKE ? OR content LIKE ?
+       ORDER BY createdAt DESC
+       LIMIT ?`,
+      [term, term, safeLimit]
+    );
+    return rows;
+  },
 };
 
 export default Services;

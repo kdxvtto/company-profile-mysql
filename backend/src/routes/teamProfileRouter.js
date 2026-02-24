@@ -4,6 +4,7 @@ import { validate } from "../middlewares/validate.js";
 import { createTeamProfileSchema, updateTeamProfileSchema } from "../validations/teamProfileValidation.js";
 import verifyToken from "../middlewares/verifyToken.js";
 import { uploadTeam } from "../config/cloudinary.js";
+import { checkRole } from "../middlewares/checkRole.js";
 
 const router = express.Router();
 
@@ -96,8 +97,8 @@ const router = express.Router();
  */
 
 router.get("/", getAllTeamProfiles);
-router.post("/", verifyToken, uploadTeam.single("image"), validate(createTeamProfileSchema), createTeamProfile);
-router.put("/:id", verifyToken, uploadTeam.single("image"), validate(updateTeamProfileSchema), updateTeamProfile);
-router.delete("/:id", verifyToken, deleteTeamProfile);
+router.post("/", verifyToken, checkRole(["admin", "staff"]), uploadTeam.single("image"), validate(createTeamProfileSchema), createTeamProfile);
+router.put("/:id", verifyToken, checkRole(["admin", "staff"]), uploadTeam.single("image"), validate(updateTeamProfileSchema), updateTeamProfile);
+router.delete("/:id", verifyToken, checkRole(["admin", "staff"]), deleteTeamProfile);
 
 export default router;
