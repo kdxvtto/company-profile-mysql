@@ -2,7 +2,7 @@ import axios from 'axios';
 
 // Untuk Vite, gunakan import.meta.env
 const API_BASE_URL =
-    import.meta.env.VITE_API_URL || (import.meta.env.DEV ? 'http://localhost:3000/api' : '/web');
+    import.meta.env.VITE_API_URL || (import.meta.env.DEV ? 'http://localhost:3000/api' : '/web-api');
 
 // Access token stored in memory (not localStorage)
 let accessToken = null;

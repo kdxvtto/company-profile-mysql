@@ -52,6 +52,11 @@ const LazyWrapper = ({ children }) => (
     </Suspense>
 );
 
+const routerBasename =
+    import.meta.env.BASE_URL !== '/' && import.meta.env.BASE_URL.endsWith('/')
+        ? import.meta.env.BASE_URL.slice(0, -1)
+        : import.meta.env.BASE_URL;
+
 const router = createBrowserRouter([
     // Public routes
     {
@@ -194,7 +199,8 @@ const router = createBrowserRouter([
         path: '*',
         element: <LazyWrapper><NotFoundPage /></LazyWrapper>,
     },
-]);
+], {
+    basename: routerBasename,
+});
 
 export default router;
-

@@ -1,16 +1,12 @@
 <IfModule mod_rewrite.c>
   RewriteEngine On
-  RewriteBase /company-profile/
+  RewriteBase /web/
 
-  # Keep direct file/folder requests untouched.
   RewriteRule ^index\.html$ - [L]
   RewriteCond %{REQUEST_FILENAME} -f [OR]
   RewriteCond %{REQUEST_FILENAME} -d
   RewriteRule ^ - [L]
 
-  # Keep backend/API routes untouched (avoid SPA fallback conflicts).
-  RewriteRule ^(web|api|uploads|health)(/|$) - [L]
-
-  # SPA fallback for Company Profile routes.
+  # SPA fallback for /web routes.
   RewriteRule . index.html [L]
 </IfModule>
