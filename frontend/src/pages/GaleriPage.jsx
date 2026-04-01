@@ -3,6 +3,7 @@ import { Image, X, ChevronLeft, ChevronRight, Loader2 } from 'lucide-react';
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
 import { galleryAPI } from '@/lib/api';
+import { getMediaUrl } from '@/lib/mediaUrl';
 
 const GaleriPage = () => {
     const [gallery, setGallery] = useState([]);
@@ -106,7 +107,7 @@ const GaleriPage = () => {
                                     <div className="aspect-[4/3] overflow-hidden">
                                         {item.image?.[0] ? (
                                             <img
-                                                src={item.image[0]}
+                                                src={getMediaUrl(item.image[0])}
                                                 alt={item.title}
                                                 width={400}
                                                 height={300}
@@ -166,7 +167,7 @@ const GaleriPage = () => {
                     >
                         <div className="flex-1 flex items-center justify-center overflow-hidden">
                             <img
-                                src={selectedImage.image?.[0]}
+                                src={getMediaUrl(selectedImage.image?.[0])}
                                 alt={selectedImage.title}
                                 loading="eager"
                                 decoding="async"

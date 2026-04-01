@@ -12,18 +12,9 @@ import {
     DialogFooter,
 } from '@/components/ui/dialog';
 import { servicesAPI } from '@/lib/api';
+import { getMediaUrl } from '@/lib/mediaUrl';
 
-// Base URL untuk gambar dari backend
-const API_BASE_URL = 'http://localhost:3000';
-
-// Helper function untuk mendapatkan URL gambar yang benar
-const getImageUrl = (imagePath) => {
-    if (!imagePath) return null;
-    // Jika sudah URL lengkap, kembalikan langsung
-    if (imagePath.startsWith('http')) return imagePath;
-    // Jika path relatif, tambahkan base URL
-    return `${API_BASE_URL}${imagePath}`;
-};
+const getImageUrl = getMediaUrl;
 
 const ServicesPage = () => {
     const [services, setServices] = useState([]);

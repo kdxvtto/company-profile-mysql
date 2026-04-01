@@ -4,16 +4,9 @@ import { ArrowLeft, Loader2, Briefcase } from 'lucide-react';
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
 import { servicesAPI } from '@/lib/api';
+import { getMediaUrl } from '@/lib/mediaUrl';
 
-// Base URL untuk gambar dari backend
-const API_BASE_URL = 'http://localhost:3000';
-
-// Helper function untuk mendapatkan URL gambar yang benar
-const getImageUrl = (imagePath) => {
-    if (!imagePath) return null;
-    if (imagePath.startsWith('http')) return imagePath;
-    return `${API_BASE_URL}${imagePath}`;
-};
+const getImageUrl = getMediaUrl;
 
 const LayananDetailPage = () => {
     const { id } = useParams();

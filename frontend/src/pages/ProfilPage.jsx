@@ -1,9 +1,7 @@
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
 import { Users, Target, Eye, Award } from 'lucide-react';
-
-// Base URL untuk gambar dari backend
-const API_BASE_URL = 'http://localhost:3000';
+import { getMediaUrl } from '@/lib/mediaUrl';
 
 const ProfilPage = () => {
     return (
@@ -28,7 +26,7 @@ const ProfilPage = () => {
                     <div className="mt-12 max-w-5xl mx-auto">
                         <div className="rounded-2xl overflow-hidden shadow-2xl">
                             <img 
-                                src={`${API_BASE_URL}/uploads/profile.jpg`}
+                                src={getMediaUrl('/uploads/profile.jpg')}
                                 alt="Tim Bank Wonogiri"
                                 className="w-full h-auto object-cover"
                                 onError={(e) => {

@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Plus, Pencil, Trash2, Image, Upload, Loader2, X, Search } from 'lucide-react';
 import { galleryAPI } from '@/lib/api';
 import Pagination from '@/components/admin/Pagination';
+import { getMediaUrl } from '@/lib/mediaUrl';
 
 const GalleryPage = () => {
     const [gallery, setGallery] = useState([]);
@@ -85,7 +86,7 @@ const GalleryPage = () => {
             content: item.content,
             image: null,
         });
-        setPreview(item.image?.[0] || null);
+        setPreview(getMediaUrl(item.image?.[0]) || null);
         setIsModalOpen(true);
     };
 
@@ -174,7 +175,7 @@ const GalleryPage = () => {
                                 <div className="aspect-[4/3] bg-gray-100">
                                     {item.image?.[0] ? (
                                         <img
-                                            src={item.image[0]}
+                                            src={getMediaUrl(item.image[0])}
                                             alt={item.title}
                                             className="w-full h-full object-cover"
                                         />

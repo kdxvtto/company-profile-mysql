@@ -28,6 +28,15 @@ import swaggerDocs from "./document/swagger.js";
 
 const app = express();
 
+const normalizeApiPrefix = (value) => {
+    const raw = (value || "/api").trim();
+    const withLeadingSlash = raw.startsWith("/") ? raw : `/${raw}`;
+    const withoutTrailingSlash = withLeadingSlash.replace(/\/+$/, "");
+    return withoutTrailingSlash || "/api";
+};
+
+const API_PREFIX = normalizeApiPrefix(process.env.API_PREFIX || "/api");
+
 if(process.env.TRUST_PROXY === "true") {
     app.set("trust proxy", "loopback");
 }
@@ -56,17 +65,17 @@ const cacheOptions = { maxAge: '7d', etag: true };
 const uploadsDir = path.join(__dirname, "../public/uploads");
 app.use("/uploads", express.static(uploadsDir, cacheOptions));
 
-app.use("/api/users", userRoutes);
-app.use("/api/services", serviceRoutes);
-app.use("/api/news", newsRoutes);
-app.use("/api/team-profiles", teamProfileRoutes);
-app.use("/api/freyabpr", authRoutes);
-app.use("/api/baldurbpr", authRoutes); // Separate route for register (admin only)
-app.use("/api/search", searchRoutes);
-app.use("/api/publications", publicationRoutes);
-app.use("/api/gallery", galleryRoutes);
-app.use("/api/activity", activityRoutes);
-app.use("/api/ppid", ppidRoutes);
+app.use(`${API_PREFIX}/users`, userRoutes);
+app.use(`${API_PREFIX}/services`, serviceRoutes);
+app.use(`${API_PREFIX}/news`, newsRoutes);
+app.use(`${API_PREFIX}/team-profiles`, teamProfileRoutes);
+app.use(`${API_PREFIX}/freyabpr`, authRoutes);
+app.use(`${API_PREFIX}/baldurbpr`, authRoutes); // Separate route for register (admin only)
+app.use(`${API_PREFIX}/search`, searchRoutes);
+app.use(`${API_PREFIX}/publications`, publicationRoutes);
+app.use(`${API_PREFIX}/gallery`, galleryRoutes);
+app.use(`${API_PREFIX}/activity`, activityRoutes);
+app.use(`${API_PREFIX}/ppid`, ppidRoutes);
 
 // Health check endpoint
 app.get("/health", (req, res) => {
