@@ -111,8 +111,9 @@ api.interceptors.response.use(
                 clearAccessToken();
                 
                 // Only redirect to login if on admin pages
-                if (window.location.pathname.startsWith('/admin')) {
-                    window.location.href = '/freyabpr/login';
+                const base = import.meta.env.BASE_URL || '/';
+                if (window.location.pathname.startsWith(`${base}admin`)) {
+                    window.location.href = `${base}freyabpr/login`;
                 }
                 
                 return Promise.reject(refreshError);
